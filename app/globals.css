@@ -1,26 +1,213 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Paleta editorial clara */
+  --color-paper: #F4EFE6;
+  --color-paper-warm: #EDE8DC;
+  --color-ink: #1A1814;
+  --color-ink-soft: #3D3830;
+  --color-ink-muted: #6B6358;
+  --color-vermilion: #C8412C;
+  --color-vermilion-soft: #EABCB4;
+  --color-amber-signal: #B88A1C;
+  --color-amber-soft: #E8D89A;
+  --color-olive: #5B7034;
+  --color-olive-soft: #C4D4A8;
+  --color-rule: #D9D2C2;
+  --color-rule-light: #EAE6DC;
+
+  /* Paleta oscura */
+  --color-void: #0E1116;
+  --color-slate-dark: #171B23;
+  --color-slate-mid: #1E2430;
+  --color-bone: #E8E1D0;
+  --color-bone-muted: #A89E8A;
+  --color-signal: #E4B33A;
+  --color-ember: #E0593F;
+  --color-wire: #2A3140;
+  --color-wire-light: #3A4455;
+
+  /* Colores nodos tablero */
+  --color-node-doc: #4A7BA7;
+  --color-node-evid: #2A5C8A;
+  --color-node-interview: #6A5492;
+  --color-node-test: #4A7B6A;
+  --color-node-finding-crit: #E0593F;
+  --color-node-finding-med: #C8951A;
+  --color-node-finding-low: #5B8C3A;
+  --color-node-criteria: #8A6E45;
+  --color-node-response: #3A6B4A;
+
+  /* Tipografía */
+  --font-display: var(--font-fraunces), 'Georgia', serif;
+  --font-sans: var(--font-geist), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, 'Courier New', monospace;
+
+  /* Radios */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ─── Base global ─── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  font-family: var(--font-sans);
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  min-height: 100dvh;
+}
+
+/* ─── Grain overlay para el modo claro ─── */
+.grain-overlay {
+  position: relative;
+}
+
+.grain-overlay::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px;
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ─── Dark section grid ─── */
+.dark-grid {
+  background-image:
+    linear-gradient(var(--color-wire) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-wire) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: -1px -1px;
+}
+
+/* ─── Scrollbar editorial ─── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-rule-light);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-rule);
+  border-radius: 3px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: var(--color-slate-mid);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--color-wire-light);
+}
+
+/* ─── Modo oscuro base ─── */
+.dark {
+  background-color: var(--color-void);
+  color: var(--color-bone);
+}
+
+/* ─── Tipografía utilitaria ─── */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* ─── Transiciones nodo tablero ─── */
+.board-node {
+  transition: opacity 0.25s ease, filter 0.25s ease;
+}
+
+.board-node-dimmed {
+  opacity: 0.15;
+  filter: grayscale(0.8);
+}
+
+/* ─── Animaciones de entrada ─── */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.5s ease forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease forwards;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.35s ease forwards;
+}
+
+/* ─── Stagger delays ─── */
+.delay-50  { animation-delay: 50ms;  }
+.delay-100 { animation-delay: 100ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-250 { animation-delay: 250ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-350 { animation-delay: 350ms; }
+.delay-400 { animation-delay: 400ms; }
+
+/* ─── Print styles ─── */
+@media print {
+  .no-print { display: none !important; }
+  .print-break-before { break-before: page; }
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt;
+  }
+  html {
+    background: white !important;
+  }
 }
