@@ -39,7 +39,7 @@ export default async function MarcoPage({ params }: MarcoPageProps) {
     <div className="audit-shell flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-7xl px-6 py-12">
+      <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-12">
         <div
           className="mb-8 flex items-center gap-2 text-xs text-ink-muted"
           style={{ fontFamily: 'var(--font-mono)' }}
@@ -49,9 +49,9 @@ export default async function MarcoPage({ params }: MarcoPageProps) {
           <span>{marcoInfo.id}</span>
         </div>
 
-        <div className="audit-file-surface mb-10 p-8" style={{ borderTop: `4px solid ${marcoInfo.accent}` }}>
+        <div className="audit-file-surface mb-10 p-5 sm:p-8" style={{ borderTop: `4px solid ${marcoInfo.accent}` }}>
           <div
-            className="font-display mb-4 text-7xl font-black leading-none"
+            className="font-display mb-4 text-5xl font-black leading-none sm:text-7xl"
             style={{ fontFamily: 'var(--font-display)', color: marcoInfo.accent, letterSpacing: '0em' }}
           >
             {marcoInfo.id}
@@ -85,8 +85,8 @@ export default async function MarcoPage({ params }: MarcoPageProps) {
                       className="audit-file-surface p-5 opacity-0 animate-fade-up transition-all hover:border-signal/45"
                       style={{ animationDelay: `${(di * 5 + ci) * 60}ms`, animationFillMode: 'forwards' }}
                     >
-                      <div className="flex items-start gap-4">
-                        <CriterioBadge codigo={criterio.codigo} marco={criterio.marco} className="mt-0.5 shrink-0" />
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                        <CriterioBadge codigo={criterio.codigo} marco={criterio.marco} className="mt-0.5 w-fit shrink-0" />
                         <div className="min-w-0 flex-1">
                           <h3 className="mb-1 text-sm font-semibold leading-snug text-ink">{criterio.nombre}</h3>
                           <p className="text-xs leading-relaxed text-ink-muted">{criterio.descripcion}</p>
@@ -104,7 +104,7 @@ export default async function MarcoPage({ params }: MarcoPageProps) {
                                   <Link
                                     key={h.id}
                                     href={`/casos/${caso.id}/hallazgos/${h.id}`}
-                                    className="group flex items-center gap-3 px-2 py-1 text-xs transition-colors hover:bg-paper-warm"
+                                    className="group flex min-w-0 flex-wrap items-center gap-2 px-2 py-1 text-xs transition-colors hover:bg-paper-warm sm:flex-nowrap sm:gap-3"
                                   >
                                     <span
                                       className="w-14 shrink-0 font-mono text-signal"
@@ -113,7 +113,7 @@ export default async function MarcoPage({ params }: MarcoPageProps) {
                                       {h.numero}
                                     </span>
                                     <StatusPill status={h.severidad} size="sm" className="shrink-0" />
-                                    <span className="truncate text-ink-muted transition-colors group-hover:text-ink">{h.titulo}</span>
+                                    <span className="min-w-0 flex-1 text-ink-muted transition-colors group-hover:text-ink sm:truncate">{h.titulo}</span>
                                     <span className="ml-auto shrink-0 text-ink-muted transition-transform group-hover:translate-x-1 group-hover:text-signal">-&gt;</span>
                                   </Link>
                                 ))}

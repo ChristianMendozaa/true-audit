@@ -1,7 +1,9 @@
 import { cert, getApps, initializeApp, type App } from 'firebase-admin/app';
+import { getAuth, type Auth } from 'firebase-admin/auth';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 
 let cachedDb: Firestore | null = null;
+let cachedAuth: Auth | null = null;
 
 function normalizePrivateKey(value: string) {
   return value.replace(/\\n/g, '\n');
@@ -43,4 +45,10 @@ export function getFirebaseAdminDb() {
   cachedDb = getFirestore(getFirebaseAdminApp());
   cachedDb.settings({ ignoreUndefinedProperties: true });
   return cachedDb;
+}
+
+export function getFirebaseAdminAuth() {
+  if (cachedAuth) return cachedAuth;
+  cachedAuth = getAuth(getFirebaseAdminApp());
+  return cachedAuth;
 }

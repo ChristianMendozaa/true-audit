@@ -44,7 +44,17 @@ export type TipoEvento =
   | 'cierre';
 export type Marco = 'COBIT' | 'COSO' | 'RGSI';
 export type EstadoCaso = 'en-curso' | 'cerrado' | 'pendiente-respuesta';
-export type RolUsuario = 'auditor' | 'auditado' | 'demo';
+export type RolUsuario = 'auditor_lider' | 'auditor' | 'auditado' | 'lector' | 'demo';
+export type RolCaso = Exclude<RolUsuario, 'demo'>;
+
+export interface MiembroCaso {
+  uid: string;
+  email?: string | null;
+  nombre?: string | null;
+  rol: RolCaso;
+  activo?: boolean;
+  organizacion?: string;
+}
 
 export interface UsuarioSesion {
   id: string;
@@ -83,6 +93,9 @@ export interface Evidencia {
   hallazgos?: string[];
   nombreArchivo?: string;
   archivoAdjunto?: ArchivoEvidencia;
+  confidencialidad?: 'publica' | 'interna' | 'confidencial' | 'restringida';
+  ubicacionReferencia?: string;
+  hashDocumento?: string;
   descartada?: boolean;
   enTablero?: boolean;
 }
@@ -92,8 +105,10 @@ export interface ArchivoEvidencia {
   tipoMime: string;
   tamanoBytes: number;
   ultimaModificacion: string;
-  almacenamiento: 'local-demo' | 'firebase';
+  almacenamiento: 'metadata-only' | 'local-demo' | 'firebase';
   dataUrl?: string;
+  hash?: string;
+  referencia?: string;
 }
 
 export interface RespuestaAuditado {
@@ -186,4 +201,22 @@ export interface Caso {
   timeline: EventoTimeline[];
   nodosTablero: NodoTablero[];
   conexionesTablero: ConexionTablero[];
+  revision?: number;
+  updatedAt?: string;
+  updatedBy?: string;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  caseId: string;
+  actorUid: string;
+  actorEmail?: string | null;
+  actorName?: string | null;
+  actorRole: RolCaso;
+  action: string;
+  entity: string;
+  summary: string;
+  revisionBefore: number;
+  revisionAfter: number;
+  createdAt?: string;
 }

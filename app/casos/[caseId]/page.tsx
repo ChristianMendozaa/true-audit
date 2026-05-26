@@ -6,6 +6,7 @@ import KpiTile from '@/components/data/KpiTile';
 import StatusPill from '@/components/data/StatusPill';
 import CriterioBadge from '@/components/data/CriterioBadge';
 import SectionRule from '@/components/shell/SectionRule';
+import CaseGovernancePanel from '@/components/cases/CaseGovernancePanel';
 
 interface CaseDashboardProps {
   params: Promise<{ caseId: string }>;
@@ -105,6 +106,10 @@ export default async function CaseDashboard({ params }: CaseDashboardProps) {
         <KpiTile value={caso.hallazgos.length} label="Hallazgos emitidos" sublabel={`${sinRespuesta.length} sin respuesta`} accent={sinRespuesta.length > 0 ? 'amber' : 'default'} animationDelay={80} />
         <KpiTile value={criticos.length} label="Hallazgos de riesgo alto" sublabel="requieren atencion inmediata" accent={criticos.length > 0 ? 'vermilion' : 'olive'} animationDelay={160} />
         <KpiTile value={diasTranscurridos} label="Dias en curso" sublabel={`desde ${caso.fechaInicio}`} animationDelay={240} />
+      </div>
+
+      <div className="mt-6">
+        <CaseGovernancePanel caseId={caso.id} />
       </div>
 
       <SectionRule label="Distribucion de hallazgos" number={1} />

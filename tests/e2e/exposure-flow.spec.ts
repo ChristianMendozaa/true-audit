@@ -10,8 +10,17 @@ const routes = [
   '/casos/2026-014/kanban',
   '/casos/2026-014/timeline',
   '/casos/2026-014/informe',
+  '/casos/2026-014/usuarios',
+  '/casos/2026-014/movimientos',
   '/marcos',
   '/marcos/cobit',
+];
+
+const responsiveRoutes = ['/', '/casos', ...routes];
+const responsiveViewports = [
+  { width: 360, height: 844 },
+  { width: 390, height: 844 },
+  { width: 768, height: 1024 },
 ];
 
 test.beforeEach(async ({ page }) => {
@@ -58,6 +67,77 @@ test('rutas principales cargan sin consola rota ni overflow horizontal', async (
   expect(consoleErrors).toEqual([]);
 });
 
+test('modo sin rol admin no muestra administracion en el indice', async ({ page }) => {
+  await gotoReady(page, '/casos/2026-014');
+  await expect(page.getByRole('link', { name: /Usuarios y roles/ })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: /Movimientos/ })).toHaveCount(0);
+});
+
+test('pantallas principales son responsive en mobile y tablet', async ({ page }) => {
+  test.slow();
+  const consoleErrors: string[] = [];
+  page.on('console', message => {
+    const text = message.text();
+    if (message.type() === 'error' && !text.includes('/_next/webpack-hmr')) {
+      consoleErrors.push(`${page.url()}: ${text}`);
+    }
+  });
+
+  for (const viewport of responsiveViewports) {
+    await page.setViewportSize(viewport);
+
+    for (const route of responsiveRoutes) {
+      await gotoReady(page, route);
+
+      const health = await page.evaluate(() => ({
+        overflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth + 2,
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+        bodyTextLength: (document.body.textContent ?? '').trim().length,
+      }));
+
+      expect(health.bodyTextLength, `${route} @ ${viewport.width}px`).toBeGreaterThan(30);
+      expect(
+        health.overflowX,
+        `${route} @ ${viewport.width}px genera overflow horizontal: ${health.scrollWidth}/${health.clientWidth}`,
+      ).toBe(false);
+    }
+  }
+
+  expect(consoleErrors).toEqual([]);
+});
+
+test('portada mobile no superpone hero ni tarjetas', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Auditoría de sistemas con trazabilidad total' })).toBeVisible();
+
+  const health = await page.evaluate(() => {
+    const h1 = document.querySelector('h1')?.getBoundingClientRect();
+    const firstCard = document.querySelector('article')?.getBoundingClientRect();
+    const overflowing = [...document.body.querySelectorAll('*')]
+      .filter(element => {
+        const rect = element.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0 && (rect.left < -2 || rect.right > window.innerWidth + 2);
+      })
+      .map(element => element.tagName.toLowerCase());
+
+    return {
+      overflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth + 2,
+      articleCount: document.querySelectorAll('article').length,
+      firstCardBelowHero: Boolean(h1 && firstCard && firstCard.top > h1.bottom),
+      h1InsideViewport: Boolean(h1 && h1.left >= 0 && h1.right <= window.innerWidth),
+      overflowing,
+    };
+  });
+
+  expect(health.overflowX).toBe(false);
+  expect(health.articleCount).toBe(6);
+  expect(health.firstCardBelowHero).toBe(true);
+  expect(health.h1InsideViewport).toBe(true);
+  expect(health.overflowing).toEqual([]);
+});
+
 test('flujo MVP permite crear evidencia y hallazgo en modo auditor', async ({ page }) => {
   await gotoReady(page, '/casos/2026-014/evidencias');
   await page.getByRole('button', { name: 'Nueva evidencia' }).click();
@@ -94,11 +174,11 @@ test('rol auditado registra respuesta y modo demo bloquea edicion', async ({ pag
   await expect(page.getByLabel('Seleccionar rol de sesion')).toHaveValue('auditado');
   await page.getByRole('button', { name: 'Registrar respuesta del auditado' }).click();
   await page.getByLabel('Argumento del banco').fill('El banco acepta parcialmente el hallazgo y presenta un plan de prueba integral.');
-  await page.getByLabel('Comentario del auditor').fill('Se mantiene el hallazgo hasta verificar evidencia de ejecucion.');
+  await expect(page.getByLabel('Comentario del auditor')).toBeDisabled();
   await page.getByRole('button', { name: 'Guardar respuesta' }).click();
 
   await expect(page.getByText('acepta-parcialmente')).toBeVisible();
-  await expect(page.getByText('Se mantiene el hallazgo')).toBeVisible();
+  await expect(page.getByText('Auditor: pendiente')).toBeVisible();
 
   await page.getByLabel('Seleccionar rol de sesion').selectOption('demo');
   await gotoReady(page, '/casos/2026-014/hallazgos');
@@ -123,6 +203,7 @@ test('tablero e informe exponen trazabilidad y exportacion', async ({ page }) =>
 
 test('tablero permite crear nodos y conectar con relacion guiada', async ({ page }) => {
   await gotoReady(page, '/casos/2026-014/tablero');
+  await page.getByRole('button', { name: 'Restaurar demo original' }).click();
   await page.getByRole('button', { name: 'Crear figura' }).click();
   await page.getByTestId('case-board-canvas').click({ position: { x: 520, y: 360 } });
   await page.getByLabel('Titulo de nodo').fill('Nodo de prueba E2E');
@@ -132,8 +213,8 @@ test('tablero permite crear nodos y conectar con relacion guiada', async ({ page
 
   await page.getByLabel('Seleccionar tipo de relacion').selectOption('mitiga');
   await page.getByRole('button', { name: 'Conectar' }).click();
-  await page.locator('.board-node').nth(0).click();
-  await page.locator('.board-node').nth(1).click();
+  await page.locator('.board-node').filter({ hasText: 'Nodo de prueba E2E' }).click();
+  await page.locator('.board-node').filter({ hasText: 'H-001' }).click({ force: true });
   await expect(page.getByTestId('case-board-canvas').getByText('MITIGA')).toBeVisible();
 });
 

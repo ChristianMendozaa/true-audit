@@ -1,6 +1,9 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { getFirebaseClientDb, isFirebaseAuthMode, isFirebaseDataMode } from '@/lib/firebase/client';
 import type {
   Caso,
   ConexionTablero,
@@ -8,6 +11,7 @@ import type {
   EstadoHallazgo,
   EstadoRevisionEvidencia,
   Hallazgo,
+  MiembroCaso,
   NodoTablero,
   RespuestaAuditado,
   TipoRelacion,
@@ -39,10 +43,14 @@ interface CaseDataContextValue {
   addBoardConnection: (desde: string, hacia: string, etiqueta: TipoRelacion, options?: Partial<BoardConnectionInput>) => ConexionTablero;
   updateBoardConnection: (id: string, patch: Partial<ConexionTablero>) => void;
   deleteBoardConnection: (id: string) => void;
+  syncStatus: 'local' | 'idle' | 'saving' | 'error' | 'conflict';
+  syncMessage: string | null;
+  reloadRemoteCase: () => Promise<void>;
 }
 
 const CaseDataContext = createContext<CaseDataContextValue | null>(null);
-const FIREBASE_STORAGE_ENABLED = process.env.NEXT_PUBLIC_TRUE_AUDIT_STORAGE_MODE === 'firebase';
+const FIREBASE_DATA_ENABLED = isFirebaseDataMode();
+const FIREBASE_AUTH_ENABLED = isFirebaseAuthMode();
 
 function cloneCase(caso: Caso): Caso {
   return JSON.parse(JSON.stringify(caso)) as Caso;
@@ -93,31 +101,62 @@ function appendTimeline(caso: Caso, event: Caso['timeline'][number]): Caso {
   return { ...caso, timeline: [...caso.timeline, event] };
 }
 
-async function loadFirebaseCase(caseId: string): Promise<Caso | null> {
+function normalizeCase(caso: Caso): Caso {
+  return {
+    ...caso,
+    revision: caso.revision ?? 0,
+  };
+}
+
+function caseSignature(caso: Caso) {
+  return JSON.stringify(caso);
+}
+
+async function loadFirebaseCase(caseId: string, token?: string | null): Promise<{ caso: Caso | null; member?: MiembroCaso | null }> {
   const response = await fetch(`/api/casos/${caseId}/data`, {
     method: 'GET',
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     cache: 'no-store',
   });
 
-  if (response.status === 404) return null;
+  if (response.status === 404) return { caso: null };
   if (!response.ok) {
     throw new Error(`Firebase devolvio ${response.status} al cargar el caso.`);
   }
 
-  const body = await response.json() as { caso?: Caso | null };
-  return body.caso ?? null;
+  const body = await response.json() as { caso?: Caso | null; member?: MiembroCaso | null };
+  return { caso: body.caso ? normalizeCase(body.caso) : null, member: body.member ?? null };
 }
 
-async function saveFirebaseCase(caso: Caso) {
+async function saveFirebaseCase(caso: Caso, options?: { token?: string | null; baseRevision?: number }) {
   const response = await fetch(`/api/casos/${caso.id}/data`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ caso }),
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options?.token ? { Authorization: `Bearer ${options.token}` } : {}),
+    },
+    body: JSON.stringify({
+      caso,
+      baseRevision: options?.baseRevision,
+      action: 'case.update',
+      entity: 'caso',
+    }),
   });
+
+  if (response.status === 409) {
+    const body = await response.json() as { currentRevision?: number; expectedRevision?: number };
+    const error = new Error('conflict') as Error & { currentRevision?: number; expectedRevision?: number; conflict?: boolean };
+    error.conflict = true;
+    error.currentRevision = body.currentRevision;
+    error.expectedRevision = body.expectedRevision;
+    throw error;
+  }
 
   if (!response.ok) {
     throw new Error(`Firebase devolvio ${response.status} al guardar el caso.`);
   }
+
+  return response.json() as Promise<{ caso?: Caso; revision?: number }>;
 }
 
 export default function CaseDataProvider({
@@ -127,22 +166,67 @@ export default function CaseDataProvider({
   initialCaso: Caso;
   children: React.ReactNode;
 }) {
-  const [caso, setCaso] = useState<Caso>(() => cloneCase(initialCaso));
+  const {
+    authReady,
+    idToken,
+    isAuthenticated,
+    canEditAuditWork,
+    canRegisterResponse,
+    setCaseMembership,
+  } = useAuth();
+  const [caso, setCaso] = useState<Caso>(() => normalizeCase(cloneCase(initialCaso)));
   const [isHydrated, setIsHydrated] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<CaseDataContextValue['syncStatus']>(FIREBASE_DATA_ENABLED ? 'idle' : 'local');
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const firebaseSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const baseRevisionRef = useRef(initialCaso.revision ?? 0);
+  const lastSavedSignatureRef = useRef(caseSignature(normalizeCase(cloneCase(initialCaso))));
+  const skipNextRemoteSaveRef = useRef(false);
+
+  const applyRemoteCase = useCallback((remoteCaso: Caso) => {
+    const normalized = normalizeCase(remoteCaso);
+    baseRevisionRef.current = normalized.revision ?? 0;
+    lastSavedSignatureRef.current = caseSignature(normalized);
+    setCaso(normalized);
+    window.localStorage.setItem(storageKey(initialCaso.id), JSON.stringify(normalized));
+  }, [initialCaso.id]);
+
+  const reloadRemoteCase = useCallback(async () => {
+    if (!FIREBASE_DATA_ENABLED) return;
+    if (FIREBASE_AUTH_ENABLED && !idToken) return;
+    const remote = await loadFirebaseCase(initialCaso.id, idToken);
+    if (remote.member !== undefined) setCaseMembership(remote.member ?? null);
+    if (remote.caso) {
+      applyRemoteCase(migrateBoardLineStyle(remote.caso));
+      setSyncStatus('idle');
+      setSyncMessage('Version remota recargada.');
+    }
+  }, [applyRemoteCase, idToken, initialCaso.id, setCaseMembership]);
 
   useEffect(() => {
     let cancelled = false;
 
     const hydrate = async () => {
+      if (FIREBASE_AUTH_ENABLED && !authReady) return;
+
       try {
         const saved = window.localStorage.getItem(storageKey(initialCaso.id));
         const lineStyleMigrated = window.localStorage.getItem(boardLineStyleMigrationKey(initialCaso.id));
 
-        if (saved) {
+        if (FIREBASE_AUTH_ENABLED && !isAuthenticated) {
+          const demoCaso = migrateBoardLineStyle(normalizeCase(cloneCase(initialCaso)));
+          if (!cancelled) {
+            setCaseMembership(null);
+            applyRemoteCase(demoCaso);
+          }
+          if (!lineStyleMigrated) window.localStorage.setItem(boardLineStyleMigrationKey(initialCaso.id), '1');
+          return;
+        }
+
+        if (saved && !FIREBASE_AUTH_ENABLED) {
           const parsed = JSON.parse(saved) as Caso;
-          const localCaso = lineStyleMigrated ? parsed : migrateBoardLineStyle(parsed);
-          if (!cancelled) setCaso(localCaso);
+          const localCaso = lineStyleMigrated ? normalizeCase(parsed) : migrateBoardLineStyle(normalizeCase(parsed));
+          if (!cancelled) applyRemoteCase(localCaso);
           if (!lineStyleMigrated) {
             window.localStorage.setItem(boardLineStyleMigrationKey(initialCaso.id), '1');
           }
@@ -153,24 +237,27 @@ export default function CaseDataProvider({
           window.localStorage.setItem(boardLineStyleMigrationKey(initialCaso.id), '1');
         }
 
-        if (FIREBASE_STORAGE_ENABLED) {
-          const remoteCaso = await loadFirebaseCase(initialCaso.id);
+        if (FIREBASE_DATA_ENABLED) {
+          const remote = await loadFirebaseCase(initialCaso.id, idToken);
           if (cancelled) return;
 
-          if (remoteCaso) {
-            const migratedRemote = migrateBoardLineStyle(remoteCaso);
-            setCaso(migratedRemote);
-            window.localStorage.setItem(storageKey(initialCaso.id), JSON.stringify(migratedRemote));
+          if (remote.member !== undefined) setCaseMembership(remote.member ?? null);
+
+          if (remote.caso) {
+            applyRemoteCase(migrateBoardLineStyle(remote.caso));
             return;
           }
 
-          const demoCaso = migrateBoardLineStyle(cloneCase(initialCaso));
-          setCaso(demoCaso);
-          window.localStorage.setItem(storageKey(initialCaso.id), JSON.stringify(demoCaso));
-          await saveFirebaseCase(demoCaso);
+          const demoCaso = migrateBoardLineStyle(normalizeCase(cloneCase(initialCaso)));
+          applyRemoteCase(demoCaso);
+          if (!FIREBASE_AUTH_ENABLED) await saveFirebaseCase(demoCaso);
         }
       } catch {
-        if (!cancelled) setCaso(cloneCase(initialCaso));
+        if (!cancelled) {
+          setSyncStatus(FIREBASE_DATA_ENABLED ? 'error' : 'local');
+          setSyncMessage('No se pudo cargar Firestore. Se mantiene el modo demo/local.');
+          setCaso(normalizeCase(cloneCase(initialCaso)));
+        }
       } finally {
         if (!cancelled) setIsHydrated(true);
       }
@@ -184,19 +271,72 @@ export default function CaseDataProvider({
         firebaseSaveTimerRef.current = null;
       }
     };
-  }, [initialCaso]);
+  }, [applyRemoteCase, authReady, idToken, initialCaso, isAuthenticated, setCaseMembership]);
+
+  useEffect(() => {
+    if (!FIREBASE_AUTH_ENABLED || !isAuthenticated || !idToken) return;
+    const db = getFirebaseClientDb();
+    if (!db) return;
+
+    const unsubscribe = onSnapshot(doc(db, 'casos', initialCaso.id), snapshot => {
+      const remote = snapshot.data()?.payload as Caso | undefined;
+      if (!remote) return;
+      const remoteRevision = remote.revision ?? snapshot.data()?.revision ?? 0;
+      if (remoteRevision <= baseRevisionRef.current) return;
+      if (syncStatus === 'saving') {
+        setSyncStatus('conflict');
+        setSyncMessage('Hay una version mas reciente del expediente. Recarga antes de seguir editando.');
+        return;
+      }
+      applyRemoteCase(migrateBoardLineStyle(remote));
+      setSyncMessage('Se recibieron cambios remotos del expediente.');
+    });
+
+    return unsubscribe;
+  }, [applyRemoteCase, idToken, initialCaso.id, isAuthenticated, syncStatus]);
 
   useEffect(() => {
     if (!isHydrated) return;
     window.localStorage.setItem(storageKey(initialCaso.id), JSON.stringify(caso));
 
-    if (!FIREBASE_STORAGE_ENABLED) return;
+    const signature = caseSignature(caso);
+    if (signature === lastSavedSignatureRef.current) return;
+
+    if (!FIREBASE_DATA_ENABLED) {
+      lastSavedSignatureRef.current = signature;
+      return;
+    }
+
+    if (skipNextRemoteSaveRef.current) {
+      skipNextRemoteSaveRef.current = false;
+      lastSavedSignatureRef.current = signature;
+      return;
+    }
+
+    if (FIREBASE_AUTH_ENABLED && (!idToken || (!canEditAuditWork && !canRegisterResponse))) return;
 
     if (firebaseSaveTimerRef.current) clearTimeout(firebaseSaveTimerRef.current);
     firebaseSaveTimerRef.current = setTimeout(() => {
-      void saveFirebaseCase(caso).catch(error => {
-        console.warn('[true-audit] No se pudo sincronizar con Firebase. Se mantiene copia local.', error);
-      });
+      setSyncStatus('saving');
+      setSyncMessage(null);
+      void saveFirebaseCase(caso, { token: idToken, baseRevision: baseRevisionRef.current })
+        .then(result => {
+          const savedCase = result.caso ? normalizeCase(result.caso) : { ...caso, revision: result.revision ?? caso.revision };
+          baseRevisionRef.current = savedCase.revision ?? baseRevisionRef.current;
+          lastSavedSignatureRef.current = caseSignature(savedCase);
+          setCaso(savedCase);
+          setSyncStatus('idle');
+        })
+        .catch(error => {
+          if ((error as { conflict?: boolean }).conflict) {
+            setSyncStatus('conflict');
+            setSyncMessage('Hay una version mas reciente del expediente. Recarga antes de seguir editando.');
+            return;
+          }
+          setSyncStatus('error');
+          setSyncMessage('No se pudo sincronizar con Firebase. Se mantiene copia local.');
+          console.warn('[true-audit] No se pudo sincronizar con Firebase. Se mantiene copia local.', error);
+        });
     }, 700);
 
     return () => {
@@ -205,7 +345,7 @@ export default function CaseDataProvider({
         firebaseSaveTimerRef.current = null;
       }
     };
-  }, [caso, initialCaso.id, isHydrated]);
+  }, [canEditAuditWork, canRegisterResponse, caso, idToken, initialCaso.id, isHydrated]);
 
   const updateCaso = useCallback((updater: (caso: Caso) => Caso) => {
     setCaso(prev => updater(cloneCase(prev)));
@@ -214,7 +354,8 @@ export default function CaseDataProvider({
   const resetDemo = useCallback(() => {
     window.localStorage.removeItem(storageKey(initialCaso.id));
     window.localStorage.setItem(boardLineStyleMigrationKey(initialCaso.id), '1');
-    setCaso(cloneCase(initialCaso));
+    skipNextRemoteSaveRef.current = true;
+    setCaso(normalizeCase(cloneCase(initialCaso)));
   }, [initialCaso]);
 
   const upsertEvidencia = useCallback((input: EvidenceInput, options?: { addToBoard?: boolean }) => {
@@ -535,6 +676,9 @@ export default function CaseDataProvider({
     addBoardConnection,
     updateBoardConnection,
     deleteBoardConnection,
+    syncStatus,
+    syncMessage,
+    reloadRemoteCase,
   }), [
     caso,
     isHydrated,
@@ -554,10 +698,30 @@ export default function CaseDataProvider({
     addBoardConnection,
     updateBoardConnection,
     deleteBoardConnection,
+    syncStatus,
+    syncMessage,
+    reloadRemoteCase,
   ]);
 
   return (
     <CaseDataContext.Provider value={value}>
+      {syncMessage && (
+        <div className="fixed bottom-4 right-4 z-[80] max-w-sm border border-rule bg-[#0B0F15] p-3 text-xs text-ink shadow-2xl">
+          <div className="mb-1 font-mono uppercase tracking-[0.12em] text-signal" style={{ fontFamily: 'var(--font-mono)' }}>
+            {syncStatus === 'conflict' ? 'Conflicto de version' : 'Sincronizacion'}
+          </div>
+          <p className="leading-relaxed text-ink-muted">{syncMessage}</p>
+          {syncStatus === 'conflict' && (
+            <button
+              type="button"
+              onClick={() => void reloadRemoteCase()}
+              className="mt-3 border border-signal/45 bg-signal/10 px-3 py-1.5 text-[11px] font-semibold text-ink hover:border-signal"
+            >
+              Recargar version remota
+            </button>
+          )}
+        </div>
+      )}
       {children}
     </CaseDataContext.Provider>
   );

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import AuditMark from './AuditMark';
 import { useCaseData } from '@/components/data/CaseDataProvider';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 interface CaseSidebarProps {
   caseId: string;
@@ -11,7 +12,13 @@ interface CaseSidebarProps {
   caseNumber: string;
 }
 
-const navItems = [
+const navItems: Array<{
+  label: string;
+  suffix: string;
+  icon: string;
+  code: string;
+  requiresAdmin?: boolean;
+}> = [
   { label: 'Resumen', suffix: '', icon: 'ResumenIcon', code: '00' },
   { label: 'Tablero', suffix: '/tablero', icon: 'TableroIcon', code: '01' },
   { label: 'Hallazgos', suffix: '/hallazgos', icon: 'HallazgosIcon', code: '02' },
@@ -19,19 +26,23 @@ const navItems = [
   { label: 'Linea de tiempo', suffix: '/timeline', icon: 'TimelineIcon', code: '04' },
   { label: 'Kanban', suffix: '/kanban', icon: 'KanbanIcon', code: '06' },
   { label: 'Informe', suffix: '/informe', icon: 'InformeIcon', code: '05' },
+  { label: 'Usuarios y roles', suffix: '/usuarios', icon: 'UsersIcon', code: '07', requiresAdmin: true },
+  { label: 'Movimientos', suffix: '/movimientos', icon: 'MovementsIcon', code: '08', requiresAdmin: true },
 ];
 
 export default function CaseSidebar({ caseId, caseName, caseNumber }: CaseSidebarProps) {
   const pathname = usePathname();
   const { resetDemo, isHydrated } = useCaseData();
+  const { canManageMembers } = useAuth();
   const base = `/casos/${caseId}`;
+  const visibleNavItems = navItems.filter(item => !item.requiresAdmin || canManageMembers);
 
   return (
-    <aside className="flex min-h-full w-60 shrink-0 flex-col border-r border-rule bg-[#0A0E14]">
-      <div className="border-b border-rule p-4">
-        <div className="mb-4 flex items-center gap-3">
+    <aside className="flex w-full shrink-0 flex-col border-b border-rule bg-[#0A0E14] md:h-full md:min-h-0 md:w-60 md:border-b-0 md:border-r">
+      <div className="border-b border-rule p-3 md:p-4">
+        <div className="flex items-center gap-3 md:mb-4">
           <AuditMark compact />
-          <div>
+          <div className="min-w-0">
             <div
               className="text-[9px] uppercase tracking-[0.18em] text-ink-muted"
               style={{ fontFamily: 'var(--font-mono)' }}
@@ -39,20 +50,20 @@ export default function CaseSidebar({ caseId, caseName, caseNumber }: CaseSideba
               Indice de expediente
             </div>
             <div
-              className="font-display text-lg font-semibold leading-tight text-ink"
+              className="truncate font-display text-lg font-semibold leading-tight text-ink"
               style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}
             >
               {caseNumber}
             </div>
           </div>
         </div>
-        <div className="border-l border-signal/45 pl-3 text-xs leading-snug text-ink-soft">
+        <div className="mt-3 truncate border-l border-signal/45 pl-3 text-xs leading-snug text-ink-soft md:mt-0">
           {caseName}
         </div>
       </div>
 
-      <nav className="flex-1 p-2">
-        {navItems.map(item => {
+      <nav className="flex gap-1 overflow-x-auto p-2 md:block md:flex-1 md:overflow-x-visible md:overflow-y-auto">
+        {visibleNavItems.map(item => {
           const href = `${base}${item.suffix}`;
           const isActive = item.suffix === ''
             ? pathname === base
@@ -63,7 +74,7 @@ export default function CaseSidebar({ caseId, caseName, caseNumber }: CaseSideba
               key={item.suffix}
               href={href}
               className={`
-                mb-1 flex items-center gap-2.5 border px-3 py-2.5 text-sm transition-all
+                flex shrink-0 items-center gap-2.5 border px-3 py-2.5 text-sm transition-all md:mb-1
                 ${isActive
                   ? 'audit-file-tab border-signal/45 bg-paper-warm text-ink shadow-[0_0_22px_rgba(216,164,55,0.08)]'
                   : 'border-transparent text-ink-muted hover:border-rule hover:bg-paper-warm/70 hover:text-ink-soft'
@@ -77,25 +88,25 @@ export default function CaseSidebar({ caseId, caseName, caseNumber }: CaseSideba
                 {item.code}
               </span>
               <SidebarIcon name={item.icon} active={isActive} />
-              <span>{item.label}</span>
+              <span className="whitespace-nowrap">{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="border-t border-rule p-4">
+      <div className="flex items-center gap-3 border-t border-rule p-3 md:block md:p-4">
         <button
           type="button"
           onClick={resetDemo}
           disabled={!isHydrated}
-          className="mb-3 w-full border border-signal/35 bg-signal/10 px-3 py-2 text-left text-[10px] uppercase tracking-[0.12em] text-signal transition-colors hover:border-signal disabled:opacity-50"
+          className="min-h-9 flex-1 border border-signal/35 bg-signal/10 px-3 py-2 text-left text-[10px] uppercase tracking-[0.12em] text-signal transition-colors hover:border-signal disabled:opacity-50 md:mb-3 md:w-full"
           style={{ fontFamily: 'var(--font-mono)' }}
         >
           Restaurar demo original
         </button>
         <Link
           href="/casos"
-          className="flex items-center gap-2 text-xs text-ink-muted transition-colors hover:text-ink"
+          className="flex shrink-0 items-center gap-2 text-xs text-ink-muted transition-colors hover:text-ink"
           style={{ fontFamily: 'var(--font-mono)' }}
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
@@ -171,6 +182,23 @@ function SidebarIcon({ name, active }: { name: string; active: boolean }) {
         <line x1="2.4" y1="4.5" x2="3.6" y2="4.5" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
         <line x1="6.4" y1="7" x2="7.6" y2="7" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
         <line x1="10.4" y1="5.6" x2="11.6" y2="5.6" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+      </svg>
+    ),
+    UsersIcon: (
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <circle cx="5" cy="4.2" r="2.1" stroke={color} strokeWidth="1.2" />
+        <path d="M1.7 12c.5-2.2 1.7-3.3 3.3-3.3s2.8 1.1 3.3 3.3" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+        <path d="M10.5 4.7v3.8" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+        <path d="M8.6 6.6h3.8" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+      </svg>
+    ),
+    MovementsIcon: (
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M2 3h7.5" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+        <path d="M2 7h10" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+        <path d="M2 11h6.5" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+        <circle cx="11.2" cy="3" r="1.1" stroke={color} strokeWidth="1.2" />
+        <circle cx="9.9" cy="11" r="1.1" stroke={color} strokeWidth="1.2" />
       </svg>
     ),
   };

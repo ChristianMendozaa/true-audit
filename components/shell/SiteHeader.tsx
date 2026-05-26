@@ -8,14 +8,14 @@ interface SiteHeaderProps {
 
 export default function SiteHeader({ compact = false }: SiteHeaderProps) {
   return (
-    <header className={`border-b border-rule bg-[#0C1118]/95 shadow-[0_12px_34px_rgba(0,0,0,0.24)] backdrop-blur ${compact ? 'py-3' : 'py-5'}`}>
-      <div className="flex w-full items-center justify-between px-6">
-        <Link href="/" className="group flex items-center gap-3">
+    <header className={`border-b border-rule bg-[#0C1118]/95 shadow-[0_12px_34px_rgba(0,0,0,0.24)] backdrop-blur ${compact ? 'py-3' : 'py-4 sm:py-5'}`}>
+      <div className="flex w-full flex-wrap items-center justify-between gap-3 px-4 sm:px-6">
+        <Link href="/" className="group flex min-w-0 items-center gap-3">
           <AuditMark compact={compact} className="transition-all group-hover:border-bone/70 group-hover:text-bone" />
 
-          <div>
+          <div className="min-w-0">
             <div
-              className="font-display font-medium leading-none tracking-normal text-ink"
+              className="truncate font-display font-medium leading-none tracking-normal text-ink"
               style={{
                 fontFamily: 'var(--font-display)',
                 fontSize: compact ? '15px' : '18px',
@@ -35,7 +35,7 @@ export default function SiteHeader({ compact = false }: SiteHeaderProps) {
           </div>
         </Link>
 
-        <nav className="flex items-center gap-1">
+        <nav className="flex min-w-0 flex-wrap items-center justify-end gap-1">
           <NavLink href="/casos">Expedientes</NavLink>
           <NavLink href="/marcos">Marcos</NavLink>
           <UserModeControl />

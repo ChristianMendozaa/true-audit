@@ -10,8 +10,6 @@ import CriterioBadge from '@/components/data/CriterioBadge';
 import SectionRule from '@/components/shell/SectionRule';
 import { useAuth } from '@/components/auth/AuthProvider';
 
-const MAX_LOCAL_ATTACHMENT_BYTES = 2 * 1024 * 1024;
-
 const tipoLabels: Record<TipoEvidencia, string> = {
   documento: 'Documento',
   acta: 'Acta',
@@ -60,6 +58,9 @@ type EvidenceDraft = {
   hallazgos: string[];
   nombreArchivo: string;
   archivoAdjunto?: ArchivoEvidencia;
+  confidencialidad: NonNullable<Evidencia['confidencialidad']>;
+  ubicacionReferencia: string;
+  hashDocumento: string;
   enTablero: boolean;
 };
 
@@ -77,6 +78,9 @@ function emptyDraft(): EvidenceDraft {
     hallazgos: [],
     nombreArchivo: '',
     archivoAdjunto: undefined,
+    confidencialidad: 'interna',
+    ubicacionReferencia: '',
+    hashDocumento: '',
     enTablero: true,
   };
 }
@@ -96,6 +100,9 @@ function draftFromEvidence(evidencia: Evidencia): EvidenceDraft {
     hallazgos: evidencia.hallazgos ?? [],
     nombreArchivo: evidencia.nombreArchivo ?? '',
     archivoAdjunto: evidencia.archivoAdjunto,
+    confidencialidad: evidencia.confidencialidad ?? 'interna',
+    ubicacionReferencia: evidencia.ubicacionReferencia ?? evidencia.archivoAdjunto?.referencia ?? '',
+    hashDocumento: evidencia.hashDocumento ?? evidencia.archivoAdjunto?.hash ?? '',
     enTablero: evidencia.enTablero ?? false,
   };
 }
@@ -104,15 +111,6 @@ function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function readAsDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result ?? ''));
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
 }
 
 export default function EvidenciasPage() {
@@ -163,7 +161,16 @@ export default function EvidenciasPage() {
       criterios: draft.criterios,
       hallazgos: draft.hallazgos,
       nombreArchivo: draft.nombreArchivo.trim() || undefined,
-      archivoAdjunto: draft.archivoAdjunto,
+      confidencialidad: draft.confidencialidad,
+      ubicacionReferencia: draft.ubicacionReferencia.trim() || undefined,
+      hashDocumento: draft.hashDocumento.trim() || undefined,
+      archivoAdjunto: draft.archivoAdjunto
+        ? {
+          ...draft.archivoAdjunto,
+          hash: draft.hashDocumento.trim() || undefined,
+          referencia: draft.ubicacionReferencia.trim() || undefined,
+        }
+        : undefined,
       enTablero: draft.enTablero,
     }, { addToBoard: draft.enTablero });
     setSelectedId(saved.id);
@@ -310,27 +317,24 @@ export default function EvidenciasPage() {
                   {selectedEvidencia.archivoAdjunto && (
                     <PanelMetric label="Tamano" value={formatBytes(selectedEvidencia.archivoAdjunto.tamanoBytes)} />
                   )}
+                  <PanelMetric label="Confidencialidad" value={selectedEvidencia.confidencialidad ?? 'interna'} />
                 </div>
 
                 {selectedEvidencia.archivoAdjunto && (
-                  <PanelBlock title="Adjunto local">
+                  <PanelBlock title="Adjunto documental">
                     <div className="space-y-3 text-sm text-ink-muted">
                       <div>
                         {selectedEvidencia.archivoAdjunto.nombre} / {selectedEvidencia.archivoAdjunto.tipoMime || 'tipo no informado'}
                       </div>
-                      {selectedEvidencia.archivoAdjunto.dataUrl ? (
-                        <a
-                          href={selectedEvidencia.archivoAdjunto.dataUrl}
-                          download={selectedEvidencia.archivoAdjunto.nombre}
-                          className="inline-flex border border-node-doc/50 bg-node-doc/10 px-3 py-1.5 text-xs font-semibold text-ink hover:border-node-doc"
-                        >
-                          Descargar copia local
-                        </a>
-                      ) : (
-                        <div className="border border-rule bg-[#0B0F15]/70 p-3 text-xs leading-relaxed">
-                          El archivo supera {formatBytes(MAX_LOCAL_ATTACHMENT_BYTES)}. Para no saturar el navegador se guardaron solo sus metadatos.
-                        </div>
+                      {selectedEvidencia.ubicacionReferencia && (
+                        <div>Referencia: {selectedEvidencia.ubicacionReferencia}</div>
                       )}
+                      {selectedEvidencia.hashDocumento && (
+                        <div>Hash: {selectedEvidencia.hashDocumento}</div>
+                      )}
+                      <div className="border border-rule bg-[#0B0F15]/70 p-3 text-xs leading-relaxed">
+                        Por confidencialidad y costos, True Audit guarda solo metadatos del archivo. El documento permanece bajo custodia externa del equipo auditor.
+                      </div>
                     </div>
                   </PanelBlock>
                 )}
@@ -407,7 +411,7 @@ function EvidenceForm({
       return { ...prev, [key]: Array.from(set) };
     });
   };
-  const handleFileSelected = async (file: File | undefined) => {
+  const handleFileSelected = (file: File | undefined) => {
     if (!file) return;
     const extension = file.name.includes('.') ? file.name.split('.').pop()?.toUpperCase() : '';
     const archivoAdjunto: ArchivoEvidencia = {
@@ -415,12 +419,8 @@ function EvidenceForm({
       tipoMime: file.type,
       tamanoBytes: file.size,
       ultimaModificacion: new Date(file.lastModified).toISOString(),
-      almacenamiento: 'local-demo',
+      almacenamiento: 'metadata-only',
     };
-
-    if (file.size <= MAX_LOCAL_ATTACHMENT_BYTES) {
-      archivoAdjunto.dataUrl = await readAsDataUrl(file);
-    }
 
     setDraft(prev => prev
       ? {
@@ -490,17 +490,35 @@ function EvidenceForm({
           <input value={draft.nombreArchivo} onChange={e => update('nombreArchivo', e.target.value)} className="field-input" placeholder="Nombre referencial o archivo adjunto" />
         </Field>
 
-        <Field label="Seleccionar archivo local">
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Confidencialidad">
+            <select value={draft.confidencialidad} onChange={e => update('confidencialidad', e.target.value as EvidenceDraft['confidencialidad'])} className="field-input">
+              <option value="publica">Publica</option>
+              <option value="interna">Interna</option>
+              <option value="confidencial">Confidencial</option>
+              <option value="restringida">Restringida</option>
+            </select>
+          </Field>
+          <Field label="Hash / checksum">
+            <input value={draft.hashDocumento} onChange={e => update('hashDocumento', e.target.value)} className="field-input" placeholder="SHA-256 opcional" />
+          </Field>
+        </div>
+
+        <Field label="Ubicacion o custodia">
+          <input value={draft.ubicacionReferencia} onChange={e => update('ubicacionReferencia', e.target.value)} className="field-input" placeholder="Repositorio interno, carpeta fisica, acta de entrega" />
+        </Field>
+
+        <Field label="Registrar archivo local">
           <input
             type="file"
-            onChange={e => void handleFileSelected(e.target.files?.[0])}
+            onChange={e => handleFileSelected(e.target.files?.[0])}
             className="field-input"
           />
           {draft.archivoAdjunto && (
             <div className="mt-2 border border-rule bg-[#0B0F15]/70 p-3 text-xs text-ink-muted">
               <span className="text-ink-soft">{draft.archivoAdjunto.nombre}</span>
               <span> / {formatBytes(draft.archivoAdjunto.tamanoBytes)}</span>
-              <span> / {draft.archivoAdjunto.dataUrl ? 'copia local guardada' : 'solo metadatos'}</span>
+              <span> / solo metadatos</span>
             </div>
           )}
         </Field>

@@ -17,15 +17,15 @@ export default async function CaseLayout({ children, params }: CaseLayoutProps) 
 
   return (
     <CaseDataProvider initialCaso={caso}>
-      <div className="audit-shell min-h-dvh flex flex-col bg-paper">
+      <div className="audit-shell flex h-dvh flex-col overflow-hidden bg-paper">
         <SiteHeader compact />
-        <div className="flex flex-1 min-h-0">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
           <CaseSidebar
             caseId={caso.id}
             caseName={caso.banco}
             caseNumber={caso.numero}
           />
-          <div className="flex-1 min-w-0 overflow-auto">
+          <div className="min-w-0 flex-1 overflow-auto">
             {children}
           </div>
         </div>

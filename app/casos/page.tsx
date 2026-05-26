@@ -10,9 +10,9 @@ export default function CasosPage() {
     <div className="audit-shell flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-12">
-        <div className="mb-10 flex items-end justify-between gap-6">
-          <div>
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6 sm:py-12">
+        <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+          <div className="min-w-0">
             <div
               className="mb-2 font-mono text-xs uppercase tracking-widest text-signal"
               style={{ fontFamily: 'var(--font-mono)' }}
@@ -20,7 +20,7 @@ export default function CasosPage() {
               Archivo maestro
             </div>
             <h1
-              className="font-display text-5xl font-bold text-ink"
+              className="font-display text-4xl font-bold leading-tight text-ink sm:text-5xl"
               style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}
             >
               Expedientes de auditoria
@@ -53,8 +53,8 @@ export default function CasosPage() {
                 className="audit-file-surface group block overflow-hidden opacity-0 animate-fade-up transition-all hover:border-signal/55"
                 style={{ animationDelay: `${i * 100}ms`, animationFillMode: 'forwards' }}
               >
-                <div className="flex items-start gap-8 p-6">
-                  <div className="w-40 shrink-0">
+                <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-start sm:gap-6 sm:p-6 lg:gap-8">
+                  <div className="w-full shrink-0 sm:w-40">
                     <div
                       className="mb-1 font-mono text-[10px] uppercase tracking-widest text-ink-muted"
                       style={{ fontFamily: 'var(--font-mono)' }}
@@ -69,10 +69,10 @@ export default function CasosPage() {
                     </div>
                   </div>
 
-                  <div className="h-16 w-px shrink-0 bg-rule" />
+                  <div className="hidden h-16 w-px shrink-0 bg-rule sm:block" />
 
                   <div className="min-w-0 flex-1">
-                    <div className="mb-2 flex items-start gap-3">
+                    <div className="mb-2 flex flex-wrap items-start gap-3">
                       <h2
                         className="font-display text-xl font-bold leading-tight text-ink transition-colors group-hover:text-signal"
                         style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}
@@ -91,27 +91,27 @@ export default function CasosPage() {
                     </div>
                   </div>
 
-                  <div className="grid shrink-0 grid-cols-3 gap-4 text-right">
+                  <div className="grid w-full shrink-0 grid-cols-3 gap-3 text-left sm:w-auto sm:gap-4 sm:text-right">
                     <KpiMini value={caso.evidencias.length} label="Evidencias" />
                     <KpiMini value={caso.hallazgos.length} label="Hallazgos" />
                     <KpiMini value={criticos} label="Riesgo alto" accent={criticos > 0} />
                     <KpiMini value={diasTranscurridos} label="Dias" />
                     <KpiMini value={sinRespuesta} label="Sin resp." accent={sinRespuesta > 0} />
-                    <div className="flex items-center justify-end text-ink-muted transition-transform group-hover:translate-x-1 group-hover:text-signal">
+                    <div className="flex items-center text-ink-muted transition-transform group-hover:translate-x-1 group-hover:text-signal sm:justify-end">
                       -&gt;
                     </div>
                   </div>
                 </div>
 
                 <div className="border-t border-rule bg-[#0B0F15]/45">
-                  <div className="flex items-center gap-3 px-6 py-3">
+                  <div className="flex flex-wrap items-center gap-3 px-5 py-3 sm:px-6">
                     <span
                       className="shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-muted"
                       style={{ fontFamily: 'var(--font-mono)' }}
                     >
                       Respuestas recibidas
                     </span>
-                    <div className="h-1 flex-1 overflow-hidden bg-rule-light">
+                    <div className="h-1 min-w-24 flex-1 overflow-hidden bg-rule-light">
                       <div
                         className="h-full bg-olive transition-all"
                         style={{ width: `${(respondidos / caso.hallazgos.length) * 100}%` }}

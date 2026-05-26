@@ -32,7 +32,7 @@ function emptyResponse(): ResponseDraft {
 
 export default function FindingDetailClient({ caseId, findingId }: { caseId: string; findingId: string }) {
   const { caso, upsertRespuestaAuditado } = useCaseData();
-  const { canRegisterResponse, isReadOnlyDemo, usuario } = useAuth();
+  const { canRegisterResponse, canReviewResponse, isReadOnlyDemo, usuario } = useAuth();
   const hallazgo = caso.hallazgos.find(h => h.id === findingId);
   const [draft, setDraft] = useState<ResponseDraft | null>(null);
 
@@ -67,8 +67,8 @@ export default function FindingDetailClient({ caseId, findingId }: { caseId: str
       postura: draft.postura,
       argumento: draft.argumento.trim(),
       evidenciaPresentada: draft.evidenciaPresentada.trim() || undefined,
-      comentarioAuditor: draft.comentarioAuditor.trim(),
-      decisionAuditor: draft.decisionAuditor,
+      comentarioAuditor: canReviewResponse ? draft.comentarioAuditor.trim() : '',
+      decisionAuditor: canReviewResponse ? draft.decisionAuditor : 'pendiente',
     });
     setDraft(null);
   };
@@ -177,10 +177,20 @@ export default function FindingDetailClient({ caseId, findingId }: { caseId: str
                 <textarea value={draft.evidenciaPresentada} onChange={e => setDraft({ ...draft, evidenciaPresentada: e.target.value })} className="field-input min-h-16 resize-y" />
               </Field>
               <Field label="Comentario del auditor">
-                <textarea value={draft.comentarioAuditor} onChange={e => setDraft({ ...draft, comentarioAuditor: e.target.value })} className="field-input min-h-20 resize-y" />
+                <textarea
+                  value={draft.comentarioAuditor}
+                  onChange={e => setDraft({ ...draft, comentarioAuditor: e.target.value })}
+                  disabled={!canReviewResponse}
+                  className="field-input min-h-20 resize-y disabled:cursor-not-allowed disabled:opacity-45"
+                />
               </Field>
               <Field label="Decision del auditor">
-                <select value={draft.decisionAuditor} onChange={e => setDraft({ ...draft, decisionAuditor: e.target.value as DecisionAuditor })} className="field-input">
+                <select
+                  value={canReviewResponse ? draft.decisionAuditor : 'pendiente'}
+                  onChange={e => setDraft({ ...draft, decisionAuditor: e.target.value as DecisionAuditor })}
+                  disabled={!canReviewResponse}
+                  className="field-input disabled:cursor-not-allowed disabled:opacity-45"
+                >
                   <option value="mantener">Mantener hallazgo</option>
                   <option value="ajustar">Ajustar hallazgo</option>
                   <option value="descartar">Descartar hallazgo</option>
