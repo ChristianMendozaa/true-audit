@@ -77,19 +77,6 @@ Con Firebase activo, True Audit guarda el caso completo en `casos/{caseId}` y re
 
 Mas detalle en [docs/firebase.md](docs/firebase.md).
 
-## Flujo sugerido para exposicion
-
-1. Abrir el expediente demo.
-2. Mostrar el resumen del caso y metricas.
-3. Entrar a evidencias y crear o editar una evidencia.
-4. Entrar a hallazgos y revisar un hallazgo critico.
-5. Abrir el detalle del hallazgo y explicar condicion, criterio, causa, efecto, conclusion, riesgo y recomendacion.
-6. Cambiar a rol `auditado` y registrar o revisar una respuesta.
-7. Entrar al tablero visual y seleccionar el hallazgo para mostrar su trazabilidad.
-8. Abrir la linea de tiempo para explicar el proceso de auditoria.
-9. Abrir el Kanban para explicar el estado operativo de evidencias, hallazgos y respuestas.
-10. Abrir el informe e imprimir/guardar como PDF.
-11. Descargar informe PDF, fichas de hallazgo PDF y matriz COBIT Excel.
 
 ## Limitaciones actuales
 
