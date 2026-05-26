@@ -16,14 +16,14 @@ export default function Error({ error, unstable_retry }: ErrorProps) {
         <div className="text-center max-w-md px-6">
           <div
             className="font-display font-black text-vermilion leading-none mb-8 select-none"
-            style={{ fontFamily: 'var(--font-display)', fontSize: '6rem', letterSpacing: '-0.06em' }}
+            style={{ fontFamily: 'var(--font-display)', fontSize: '6rem', letterSpacing: '0em' }}
           >
             Error
           </div>
           <div className="h-px bg-rule mb-8" />
           <h1
             className="font-display text-2xl font-bold text-ink mb-3"
-            style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.03em' }}
+            style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}
           >
             Ocurrió un error inesperado
           </h1>

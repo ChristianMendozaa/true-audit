@@ -28,7 +28,7 @@ export default function ReportSheet({ caso }: ReportSheetProps) {
               fontSize: '18rem',
               color: '#D9D2C2',
               opacity: 0.12,
-              letterSpacing: '-0.05em',
+              letterSpacing: '0em',
               transform: 'rotate(-15deg)',
             }}
           >
@@ -43,7 +43,7 @@ export default function ReportSheet({ caso }: ReportSheetProps) {
               <div className="w-14 h-14 border-2 border-ink flex items-center justify-center">
                 <span
                   className="font-display font-black text-xl"
-                  style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.04em' }}
+                  style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}
                 >
                   TA
                 </span>
@@ -51,7 +51,7 @@ export default function ReportSheet({ caso }: ReportSheetProps) {
               <div>
                 <div
                   className="font-display text-2xl font-bold text-ink"
-                  style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.03em' }}
+                  style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}
                 >
                   True Audit
                 </div>
@@ -72,7 +72,7 @@ export default function ReportSheet({ caso }: ReportSheetProps) {
               </div>
               <div
                 className="font-display text-3xl font-bold text-vermilion"
-                style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.04em' }}
+                style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}
               >
                 {caso.numero}
               </div>
@@ -89,7 +89,7 @@ export default function ReportSheet({ caso }: ReportSheetProps) {
             </div>
             <h1
               className="font-display font-bold text-ink mb-6 leading-tight"
-              style={{ fontFamily: 'var(--font-display)', fontSize: '3rem', letterSpacing: '-0.04em' }}
+              style={{ fontFamily: 'var(--font-display)', fontSize: '3rem', letterSpacing: '0em' }}
             >
               {caso.titulo}
             </h1>
@@ -131,7 +131,7 @@ export default function ReportSheet({ caso }: ReportSheetProps) {
                 <div key={i} className={`pr-6 ${i > 0 ? 'pl-6 border-l border-rule' : ''}`}>
                   <div
                     className={`font-display font-bold ${item.a}`}
-                    style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', letterSpacing: '-0.05em' }}
+                    style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', letterSpacing: '0em' }}
                   >
                     {item.n}
                   </div>
@@ -197,7 +197,7 @@ export default function ReportSheet({ caso }: ReportSheetProps) {
             <div key={group.label} className={`border ${group.accent.split(' ')[1]} p-4`}>
               <div
                 className={`font-display font-bold text-4xl ${group.accent.split(' ')[2]}`}
-                style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.04em' }}
+                style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}
               >
                 {group.items.length}
               </div>
@@ -228,7 +228,7 @@ export default function ReportSheet({ caso }: ReportSheetProps) {
                     </div>
                     <h3
                       className="font-display text-xl font-bold text-ink"
-                      style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}
+                      style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}
                     >
                       {h.titulo}
                     </h3>
@@ -245,10 +245,19 @@ export default function ReportSheet({ caso }: ReportSheetProps) {
                   ))}
                 </div>
 
+                <div className="mb-4 grid grid-cols-4 gap-2 text-sm">
+                  <FindingBlock label="Probabilidad" text={String(h.probabilidad)} />
+                  <FindingBlock label="Impacto" text={String(h.impacto)} />
+                  <FindingBlock label="Nivel de riesgo" text={h.nivelRiesgo.toUpperCase()} />
+                  <FindingBlock label="Estado" text={h.estado} />
+                </div>
+
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <FindingBlock label="Condición" text={h.condicion} />
+                  <FindingBlock label="Criterio" text={h.criterio} />
                   <FindingBlock label="Causa" text={h.causa} />
                   <FindingBlock label="Efecto / Riesgo" text={h.efecto} />
+                  <FindingBlock label="Conclusión" text={h.conclusion} />
                   <FindingBlock label="Recomendación" text={h.recomendacion} />
                 </div>
 
@@ -315,14 +324,14 @@ function SectionHeader({ num, title }: { num: string; title: string }) {
     <div className="flex items-center gap-4">
       <span
         className="font-display text-5xl font-black text-rule leading-none select-none"
-        style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.05em' }}
+        style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}
       >
         {num}
       </span>
       <div className="h-px flex-1 bg-rule" />
       <h2
         className="font-display text-xl font-bold text-ink"
-        style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}
+        style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}
       >
         {title}
       </h2>

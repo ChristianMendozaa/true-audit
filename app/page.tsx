@@ -28,7 +28,7 @@ export default function Home() {
                 style={{
                   fontFamily: 'var(--font-display)',
                   fontSize: 'clamp(3rem, 6vw, 5rem)',
-                  letterSpacing: '-0.04em',
+                  letterSpacing: '0em',
                 }}
               >
                 Auditoría de sistemas con trazabilidad total
@@ -87,7 +87,7 @@ export default function Home() {
                   <div className="mb-3">{f.icon}</div>
                   <h3
                     className="font-display text-base font-semibold text-ink mb-1"
-                    style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}
+                    style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}
                   >
                     {f.title}
                   </h3>
@@ -106,7 +106,7 @@ export default function Home() {
                 <div key={s.label} className="flex items-center gap-2">
                   <span
                     className="font-display font-bold text-2xl text-ink"
-                    style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.04em' }}
+                    style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}
                   >
                     {s.value}
                   </span>

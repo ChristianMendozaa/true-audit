@@ -3,131 +3,125 @@ import SiteHeader from '@/components/shell/SiteHeader';
 import StatusPill from '@/components/data/StatusPill';
 import { casosList } from '@/lib/mock-data';
 
-export const metadata = { title: 'Expedientes · True Audit' };
+export const metadata = { title: 'Expedientes / True Audit' };
 
 export default function CasosPage() {
   return (
-    <div className="min-h-dvh flex flex-col bg-paper">
+    <div className="audit-shell flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-12">
-        {/* Page header */}
-        <div className="flex items-end justify-between mb-10">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-12">
+        <div className="mb-10 flex items-end justify-between gap-6">
           <div>
             <div
-              className="font-mono text-xs text-ink-muted uppercase tracking-widest mb-2"
+              className="mb-2 font-mono text-xs uppercase tracking-widest text-signal"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
-              Expedientes de auditoría
+              Archivo maestro
             </div>
             <h1
-              className="font-display font-bold text-ink"
-              style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', letterSpacing: '-0.04em' }}
+              className="font-display text-5xl font-bold text-ink"
+              style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}
             >
-              Casos activos
+              Expedientes de auditoria
             </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-muted">
+              Casos de auditoria de sistemas organizados como expedientes: evidencias, hallazgos, criterios y respuestas conectadas.
+            </p>
           </div>
           <div
-            className="font-mono text-xs text-ink-muted"
+            className="border border-rule bg-paper-warm px-3 py-2 font-mono text-xs uppercase tracking-[0.12em] text-ink-muted"
             style={{ fontFamily: 'var(--font-mono)' }}
           >
             {casosList.length} expediente{casosList.length !== 1 ? 's' : ''}
           </div>
         </div>
 
-        <div className="h-px bg-rule mb-10" />
-
-        {/* Cases grid */}
-        <div className="grid grid-cols-1 gap-4">
+        <div className="space-y-4">
           {casosList.map((caso, i) => {
             const criticos = caso.hallazgos.filter(h => h.severidad === 'critico').length;
             const sinRespuesta = caso.hallazgos.filter(h => h.estadoRespuesta === 'pendiente').length;
             const diasTranscurridos = Math.floor(
               (new Date().getTime() - new Date(caso.fechaInicio).getTime()) / (1000 * 60 * 60 * 24)
             );
+            const respondidos = caso.hallazgos.filter(h => h.estadoRespuesta !== 'pendiente').length;
 
             return (
               <Link
                 key={caso.id}
                 href={`/casos/${caso.id}`}
-                className="block border border-rule hover:border-ink bg-paper hover:bg-paper-warm transition-all group animate-fade-up opacity-0"
+                className="audit-file-surface group block overflow-hidden opacity-0 animate-fade-up transition-all hover:border-signal/55"
                 style={{ animationDelay: `${i * 100}ms`, animationFillMode: 'forwards' }}
               >
-                <div className="p-6 flex items-start gap-8">
-                  {/* Left: number */}
-                  <div className="shrink-0">
+                <div className="flex items-start gap-8 p-6">
+                  <div className="w-40 shrink-0">
                     <div
-                      className="font-mono text-[10px] text-ink-muted uppercase tracking-widest mb-1"
+                      className="mb-1 font-mono text-[10px] uppercase tracking-widest text-ink-muted"
                       style={{ fontFamily: 'var(--font-mono)' }}
                     >
                       Expediente
                     </div>
                     <div
-                      className="font-display font-bold text-ink group-hover:text-vermilion transition-colors"
-                      style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', letterSpacing: '-0.04em' }}
+                      className="font-display text-4xl font-bold text-signal transition-colors group-hover:text-ink"
+                      style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}
                     >
                       {caso.numero}
                     </div>
                   </div>
 
-                  <div className="h-12 w-px bg-rule self-center shrink-0" />
+                  <div className="h-16 w-px shrink-0 bg-rule" />
 
-                  {/* Center: info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start gap-3 mb-1">
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-2 flex items-start gap-3">
                       <h2
-                        className="font-display text-xl font-bold text-ink group-hover:text-ink-soft transition-colors leading-tight"
-                        style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}
+                        className="font-display text-xl font-bold leading-tight text-ink transition-colors group-hover:text-signal"
+                        style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}
                       >
                         {caso.titulo}
                       </h2>
                       <StatusPill status={caso.estado} size="sm" className="mt-0.5 shrink-0" />
                     </div>
-                    <div className="text-sm text-ink-soft mb-3">{caso.banco} · {caso.periodo}</div>
-                    <div className="flex items-center gap-4">
+                    <div className="mb-3 text-sm text-ink-soft">{caso.banco} / {caso.periodo}</div>
+                    <div className="flex flex-wrap items-center gap-3">
                       {caso.auditores.map(a => (
-                        <span key={a.id} className="text-xs text-ink-muted">{a.nombre}</span>
+                        <span key={a.id} className="border border-rule bg-[#0B0F15]/70 px-2 py-1 text-xs text-ink-muted">
+                          {a.nombre}
+                        </span>
                       ))}
                     </div>
                   </div>
 
-                  {/* Right: KPIs */}
-                  <div className="shrink-0 grid grid-cols-3 gap-4 text-right">
+                  <div className="grid shrink-0 grid-cols-3 gap-4 text-right">
                     <KpiMini value={caso.evidencias.length} label="Evidencias" />
                     <KpiMini value={caso.hallazgos.length} label="Hallazgos" />
-                    <KpiMini value={criticos} label="Críticos" accent={criticos > 0} />
-                    <KpiMini value={diasTranscurridos} label="Días" />
+                    <KpiMini value={criticos} label="Riesgo alto" accent={criticos > 0} />
+                    <KpiMini value={diasTranscurridos} label="Dias" />
                     <KpiMini value={sinRespuesta} label="Sin resp." accent={sinRespuesta > 0} />
-                    <div className="flex items-center justify-end">
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-rule group-hover:text-ink-muted transition-colors">
-                        <path d="M7 10h8M11 6l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                    <div className="flex items-center justify-end text-ink-muted transition-transform group-hover:translate-x-1 group-hover:text-signal">
+                      -&gt;
                     </div>
                   </div>
                 </div>
 
-                {/* Progress bar: responses */}
-                <div className="border-t border-rule-light">
-                  <div className="flex items-center gap-3 px-6 py-2.5">
+                <div className="border-t border-rule bg-[#0B0F15]/45">
+                  <div className="flex items-center gap-3 px-6 py-3">
                     <span
-                      className="font-mono text-[10px] text-ink-muted shrink-0"
+                      className="shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-muted"
                       style={{ fontFamily: 'var(--font-mono)' }}
                     >
                       Respuestas recibidas
                     </span>
-                    <div className="flex-1 h-1 bg-rule-light rounded-full overflow-hidden">
+                    <div className="h-1 flex-1 overflow-hidden bg-rule-light">
                       <div
-                        className="h-full bg-olive rounded-full transition-all"
-                        style={{
-                          width: `${(caso.hallazgos.filter(h => h.estadoRespuesta !== 'pendiente').length / caso.hallazgos.length) * 100}%`,
-                        }}
+                        className="h-full bg-olive transition-all"
+                        style={{ width: `${(respondidos / caso.hallazgos.length) * 100}%` }}
                       />
                     </div>
                     <span
-                      className="font-mono text-[10px] text-ink-muted shrink-0"
+                      className="shrink-0 font-mono text-[10px] text-ink-muted"
                       style={{ fontFamily: 'var(--font-mono)' }}
                     >
-                      {caso.hallazgos.filter(h => h.estadoRespuesta !== 'pendiente').length}/{caso.hallazgos.length}
+                      {respondidos}/{caso.hallazgos.length}
                     </span>
                   </div>
                 </div>
@@ -144,13 +138,13 @@ function KpiMini({ value, label, accent = false }: { value: number; label: strin
   return (
     <div>
       <div
-        className={`font-display font-bold text-xl leading-none ${accent ? 'text-vermilion' : 'text-ink'}`}
-        style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.04em' }}
+        className={`font-display text-xl font-bold leading-none ${accent ? 'text-vermilion' : 'text-ink'}`}
+        style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}
       >
         {value}
       </div>
       <div
-        className="text-ink-muted mt-0.5"
+        className="mt-1 text-ink-muted"
         style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.04em', textTransform: 'uppercase' }}
       >
         {label}

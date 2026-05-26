@@ -9,14 +9,14 @@ export default function NotFound() {
         <div className="text-center max-w-md px-6">
           <div
             className="font-display font-black text-rule leading-none mb-8 select-none"
-            style={{ fontFamily: 'var(--font-display)', fontSize: '8rem', letterSpacing: '-0.06em' }}
+            style={{ fontFamily: 'var(--font-display)', fontSize: '8rem', letterSpacing: '0em' }}
           >
             404
           </div>
           <div className="h-px bg-rule mb-8" />
           <h1
             className="font-display text-2xl font-bold text-ink mb-3"
-            style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.03em' }}
+            style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}
           >
             Expediente no encontrado
           </h1>

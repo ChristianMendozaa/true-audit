@@ -1,0 +1,40 @@
+'use client';
+
+import { useCaseData } from '@/components/data/CaseDataProvider';
+import ReportSheet from '@/components/print/ReportSheet';
+import PrintButton from '@/components/print/PrintButton';
+import ExportFindingsButton from '@/components/data/ExportFindingsButton';
+
+export default function InformeClient() {
+  const { caso } = useCaseData();
+
+  return (
+    <div className="min-h-full bg-[#0B0F15] p-8">
+      <div className="mx-auto mb-8 flex max-w-5xl flex-wrap items-start justify-between gap-4">
+        <div>
+          <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-signal" style={{ fontFamily: 'var(--font-mono)' }}>
+            Documento formal / Vista previa
+          </div>
+          <h1 className="font-display text-4xl font-bold text-ink" style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}>
+            Informe final / {caso.numero}
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm text-ink-muted">
+            Vista imprimible y exportes academicos del expediente editable: informe final PDF, fichas de hallazgo PDF y matriz COBIT Excel.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <ExportFindingsButton caso={caso} />
+          <PrintButton />
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-5xl">
+        <ReportSheet caso={caso} />
+      </div>
+
+      <div className="mx-auto mt-6 max-w-5xl border border-rule bg-[#101721] p-4 text-xs text-ink-muted">
+        Use Ctrl+P para imprimir la vista previa o descargue los archivos formales desde los botones superiores. Los exportes usan el caso editable actual del navegador.
+      </div>
+    </div>
+  );
+}

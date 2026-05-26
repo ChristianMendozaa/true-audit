@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import { Fraunces, JetBrains_Mono, Geist } from 'next/font/google';
+import AuthProvider from '@/components/auth/AuthProvider';
 import './globals.css';
 
 const fraunces = Fraunces({
   subsets: ['latin'],
   variable: '--font-fraunces',
-  axes: ['SOFT', 'opsz', 'wght'],
+  axes: ['SOFT', 'opsz'],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -36,7 +37,9 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
       className={`${fraunces.variable} ${jetbrainsMono.variable} ${geist.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col grain-overlay">{children}</body>
+      <body className="min-h-full flex flex-col grain-overlay">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

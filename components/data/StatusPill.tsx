@@ -1,4 +1,4 @@
-import type { Severidad, EstadoRespuesta, EstadoCaso } from '@/lib/types';
+import type { EstadoCaso, EstadoRespuesta, Severidad } from '@/lib/types';
 
 type StatusType = Severidad | EstadoRespuesta | EstadoCaso | 'active' | 'conforme';
 
@@ -8,33 +8,34 @@ interface StatusPillProps {
   className?: string;
 }
 
-const config: Record<StatusType, { label: string; bg: string; text: string; dot: string }> = {
-  critico:             { label: 'Crítico',           bg: 'bg-vermilion-soft',  text: 'text-vermilion',      dot: 'bg-vermilion' },
-  medio:               { label: 'Medio',             bg: 'bg-amber-soft',      text: 'text-amber-signal',   dot: 'bg-amber-signal' },
-  bajo:                { label: 'Bajo',              bg: 'bg-olive-soft',      text: 'text-olive',          dot: 'bg-olive' },
-  pendiente:           { label: 'Pendiente',         bg: 'bg-rule-light',      text: 'text-ink-muted',      dot: 'bg-ink-muted' },
-  recibida:            { label: 'Recibida',          bg: 'bg-amber-soft',      text: 'text-amber-signal',   dot: 'bg-amber-signal' },
-  aceptada:            { label: 'Aceptada',          bg: 'bg-olive-soft',      text: 'text-olive',          dot: 'bg-olive' },
-  parcial:             { label: 'Parcial',           bg: 'bg-amber-soft',      text: 'text-amber-signal',   dot: 'bg-amber-signal' },
-  'en-curso':          { label: 'En curso',          bg: 'bg-amber-soft',      text: 'text-amber-signal',   dot: 'bg-amber-signal' },
-  cerrado:             { label: 'Cerrado',           bg: 'bg-rule-light',      text: 'text-ink-muted',      dot: 'bg-ink-muted' },
-  'pendiente-respuesta': { label: 'Pdte. respuesta', bg: 'bg-vermilion-soft',  text: 'text-vermilion',      dot: 'bg-vermilion' },
-  active:              { label: 'Activo',            bg: 'bg-olive-soft',      text: 'text-olive',          dot: 'bg-olive' },
-  conforme:            { label: 'Conforme',          bg: 'bg-olive-soft',      text: 'text-olive',          dot: 'bg-olive' },
+const config: Record<StatusType, { label: string; classes: string; dot: string }> = {
+  critico: { label: 'Riesgo alto', classes: 'border-vermilion/55 bg-vermilion/15 text-vermilion', dot: 'bg-vermilion' },
+  medio: { label: 'Riesgo medio', classes: 'border-amber-signal/55 bg-amber-signal/15 text-amber-signal', dot: 'bg-amber-signal' },
+  bajo: { label: 'Riesgo bajo', classes: 'border-olive/55 bg-olive/15 text-olive', dot: 'bg-olive' },
+  pendiente: { label: 'Sin respuesta', classes: 'border-vermilion/45 bg-vermilion/10 text-vermilion', dot: 'bg-vermilion' },
+  recibida: { label: 'Respuesta recibida', classes: 'border-node-doc/45 bg-node-doc/10 text-node-doc', dot: 'bg-node-doc' },
+  aceptada: { label: 'Aceptada', classes: 'border-olive/55 bg-olive/15 text-olive', dot: 'bg-olive' },
+  parcial: { label: 'Respuesta parcial', classes: 'border-amber-signal/55 bg-amber-signal/15 text-amber-signal', dot: 'bg-amber-signal' },
+  rechazada: { label: 'No acepta', classes: 'border-vermilion/55 bg-vermilion/15 text-vermilion', dot: 'bg-vermilion' },
+  'en-curso': { label: 'En curso', classes: 'border-amber-signal/55 bg-amber-signal/15 text-amber-signal', dot: 'bg-amber-signal' },
+  cerrado: { label: 'Cerrado', classes: 'border-rule bg-rule-light text-ink-muted', dot: 'bg-ink-muted' },
+  'pendiente-respuesta': { label: 'Pdte. respuesta', classes: 'border-vermilion/55 bg-vermilion/15 text-vermilion', dot: 'bg-vermilion' },
+  active: { label: 'Activo', classes: 'border-olive/55 bg-olive/15 text-olive', dot: 'bg-olive' },
+  conforme: { label: 'Conforme', classes: 'border-olive/55 bg-olive/15 text-olive', dot: 'bg-olive' },
 };
 
 export default function StatusPill({ status, size = 'md', className = '' }: StatusPillProps) {
-  const c = config[status] ?? config['pendiente'];
+  const c = config[status] ?? config.pendiente;
   const sizeClasses = size === 'sm'
-    ? 'text-[10px] px-2 py-0.5 gap-1'
-    : 'text-xs px-2.5 py-1 gap-1.5';
+    ? 'text-[9px] px-2 py-0.5 gap-1'
+    : 'text-[10px] px-2.5 py-1 gap-1.5';
 
   return (
     <span
-      className={`inline-flex items-center rounded-full font-mono uppercase tracking-wider ${sizeClasses} ${c.bg} ${c.text} ${className}`}
+      className={`inline-flex items-center border font-mono uppercase tracking-[0.1em] ${sizeClasses} ${c.classes} ${className}`}
       style={{ fontFamily: 'var(--font-mono)' }}
     >
-      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${c.dot}`} />
+      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${c.dot}`} />
       {c.label}
     </span>
   );
