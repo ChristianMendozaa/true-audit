@@ -1,50 +1,50 @@
 # True Audit
 
-True Audit es una TAAC visual para auditoria de sistemas. Su objetivo es asistir al equipo auditor en el relevamiento, organizacion, trazabilidad y sustentacion de hallazgos, sin reemplazar el juicio profesional del auditor.
+True Audit is a visual CAAT (Computer-Assisted Audit Tool) for systems auditing. Its goal is to assist the audit team in the survey, organization, traceability, and substantiation of findings, without replacing the professional judgment of the auditor.
 
-La herramienta trabaja como un expediente forense de auditoria: evidencias, documentos, fichas de prueba, hallazgos, criterios COBIT/COSO/RGSI, respuestas del auditado, linea de tiempo, tablero visual e informe imprimible.
+The tool works as a forensic audit file: evidence, documents, test sheets, findings, COBIT/COSO/RGSI criteria, auditee responses, timeline, visual board, and printable report.
 
-## Que problema resuelve
+## What problem it solves
 
-En una auditoria de sistemas, un hallazgo debe poder defenderse. True Audit organiza la cadena:
+In a systems audit, a finding must be defensible. True Audit organizes the chain:
 
-`evidencia -> observacion/prueba -> hallazgo -> criterio -> riesgo -> recomendacion -> respuesta del auditado`
+`evidence -> observation/test -> finding -> criterion -> risk -> recommendation -> auditee response`
 
-La app no inventa hallazgos, no evalua documentos automaticamente y no reemplaza el juicio profesional. Ayuda a ordenar, explicar y demostrar trazabilidad.
+The app does not invent findings, does not automatically evaluate documents, and does not replace professional judgment. It helps organize, explain, and demonstrate traceability.
 
-## Estado funcional actual
+## Current functional state
 
-- Caso demo `2026-014` con Banco Cordillera S.A.
-- Contenido academico alineado a COBIT `PO1`, `PO2`, `PO3`, `PO4`, `PO7`, `ME2`.
-- COSO representado por ambiente de control, evaluacion de riesgos, actividades de control, informacion y comunicacion, y supervision.
-- RGSI representado por secciones `2`, `6`, `11` y `12`.
-- Datos editables en navegador con persistencia en `localStorage`.
-- Boton para restaurar el caso demo original.
-- CRUD local de evidencias y hallazgos.
-- Adjuntos locales de evidencia: guarda metadatos y, si el archivo no supera 2 MB, una copia local descargable.
-- Registro de respuestas del auditado desde el detalle de hallazgo.
-- Roles simulados: `auditor`, `auditado` y `demo`.
-- CaseBoard conectado a datos editables, con toolbar tipo diagramador, paleta de figuras, creacion de nodos, conectores guiados y posiciones persistentes.
-- Modulo Kanban del caso para evidencias, hallazgos y respuestas por estado operativo.
-- Linea de tiempo conectada al caso editable y alta manual de eventos.
-- Informe imprimible desde navegador.
-- Exportes academicos: informe final PDF, fichas de hallazgo PDF y matriz COBIT `.xlsx`.
-- Suite de pruebas con unit/component/integration/E2E.
+- Demo case `2026-014` with Banco Cordillera S.A.
+- Academic content aligned to COBIT `PO1`, `PO2`, `PO3`, `PO4`, `PO7`, `ME2`.
+- COSO represented by control environment, risk assessment, control activities, information and communication, and monitoring.
+- RGSI represented by sections `2`, `6`, `11`, and `12`.
+- In-browser editable data with `localStorage` persistence.
+- Button to restore the original demo case.
+- Local CRUD for evidence and findings.
+- Local evidence attachments: saves metadata and, if the file does not exceed 2 MB, a downloadable local copy.
+- Auditee response logging from the finding detail view.
+- Simulated roles: `auditor`, `auditee`, and `demo`.
+- CaseBoard connected to editable data, with a diagramming-style toolbar, shape palette, node creation, guided connectors, and persistent positions.
+- Case Kanban module for evidence, findings, and responses by operational status.
+- Timeline connected to the editable case with manual event entry.
+- Printable report from the browser.
+- Academic exports: final report PDF, finding sheet PDFs, and COBIT matrix `.xlsx`.
+- Test suite with unit/component/integration/E2E tests.
 
-## Como ejecutar
+## How to run
 
 ```bash
 npm install
 npm run dev
 ```
 
-Abrir:
+Open:
 
 ```text
 http://localhost:3000/casos/2026-014
 ```
 
-## Pruebas
+## Tests
 
 ```bash
 npm run lint
@@ -54,40 +54,53 @@ npm run test:e2e
 npm run test:all
 ```
 
-La suite cubre:
+The suite covers:
 
-- unitarias de calculo de riesgo;
-- unitarias de Kanban y exportes;
-- componentes visuales y permisos simulados;
-- integracion del caso demo, criterios y relaciones;
-- integracion de endpoints internos de PDF/Excel;
-- E2E del flujo de exposicion;
-- smoke visual de tablero, Kanban e informe;
-- checks basicos de accesibilidad, consola y overflow.
+- Unit tests for risk calculation;
+- Unit tests for Kanban and exports;
+- Visual component and simulated permission tests;
+- Integration tests for the demo case, criteria, and relationships;
+- Integration tests for internal PDF/Excel endpoints;
+- E2E tests for the exposure workflow;
+- Visual smoke tests for the board, Kanban, and report;
+- Basic accessibility, console, and overflow checks.
 
 ## Firebase
 
-La app funciona sin Firebase por defecto. Para activar persistencia Firestore, copiar `.env.example` a `.env.local`, completar las variables y usar:
+The app works without Firebase by default. To enable Firestore persistence, copy `.env.example` to `.env.local`, fill in the variables, and use:
 
 ```env
 NEXT_PUBLIC_TRUE_AUDIT_STORAGE_MODE=firebase
 ```
 
-Con Firebase activo, True Audit guarda el caso completo en `casos/{caseId}` y replica subcolecciones para `evidencias`, `hallazgos`, `respuestasAuditado`, `timeline`, `nodosTablero` y `conexionesTablero`. El modo demo/local sigue funcionando como respaldo si Firebase no esta configurado o falla.
+With Firebase active, True Audit saves the full case in `casos/{caseId}` and replicates subcollections for `evidencias`, `hallazgos`, `respuestasAuditado`, `timeline`, `nodosTablero`, and `conexionesTablero`. Demo/local mode continues to work as a fallback if Firebase is not configured or fails.
 
-Mas detalle en [docs/firebase.md](docs/firebase.md).
+More detail in [docs/firebase.md](docs/firebase.md).
 
+## Suggested demo flow
 
-## Limitaciones actuales
+1. Open the demo file.
+2. Show the case summary and metrics.
+3. Go to evidence and create or edit a piece of evidence.
+4. Go to findings and review a critical finding.
+5. Open the finding detail and explain condition, criterion, cause, effect, conclusion, risk, and recommendation.
+6. Switch to the `auditee` role and record or review a response.
+7. Go to the visual board and select the finding to show its traceability.
+8. Open the timeline to explain the audit process.
+9. Open the Kanban to explain the operational status of evidence, findings, and responses.
+10. Open the report and print/save as PDF.
+11. Download the final report PDF, finding sheet PDFs, and COBIT Excel matrix.
 
-- La persistencia Firestore ya existe, pero sigue siendo local-first y sin login real.
-- Los roles son simulados, no autenticacion real.
-- Los adjuntos locales grandes guardan solo metadatos para no saturar `localStorage`.
-- Los PDF y Excel se generan con endpoints internos a partir del caso editable enviado desde el navegador; no usan todavia plantillas DOCX en runtime.
+## Current limitations
 
-## Trabajo futuro
+- Firestore persistence already exists but remains local-first with no real login.
+- Roles are simulated, not real authentication.
+- Large local attachments store only metadata to avoid saturating `localStorage`.
+- PDFs and Excel files are generated via internal endpoints from the editable case sent by the browser; DOCX templates at runtime are not yet used.
 
-- Firebase Auth con roles reales.
-- Auditoria de cambios por usuario.
-- Validaciones mas estrictas por campo.
-- Carga real de archivos en Storage.
+## Future work
+
+- Firebase Auth with real roles.
+- Per-user change auditing.
+- Stricter per-field validations.
+- Real file uploads to Storage.
