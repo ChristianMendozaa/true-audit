@@ -17,17 +17,25 @@ const navItems: Array<{
   suffix: string;
   icon: string;
   code: string;
-  requiresAdmin?: boolean;
 }> = [
   { label: 'Resumen', suffix: '', icon: 'ResumenIcon', code: '00' },
   { label: 'Tablero', suffix: '/tablero', icon: 'TableroIcon', code: '01' },
   { label: 'Hallazgos', suffix: '/hallazgos', icon: 'HallazgosIcon', code: '02' },
   { label: 'Evidencias', suffix: '/evidencias', icon: 'EvidenciasIcon', code: '03' },
-  { label: 'Linea de tiempo', suffix: '/timeline', icon: 'TimelineIcon', code: '04' },
-  { label: 'Kanban', suffix: '/kanban', icon: 'KanbanIcon', code: '06' },
-  { label: 'Informe', suffix: '/informe', icon: 'InformeIcon', code: '05' },
-  { label: 'Usuarios y roles', suffix: '/usuarios', icon: 'UsersIcon', code: '07', requiresAdmin: true },
-  { label: 'Movimientos', suffix: '/movimientos', icon: 'MovementsIcon', code: '08', requiresAdmin: true },
+  { label: 'Línea de tiempo', suffix: '/timeline', icon: 'TimelineIcon', code: '04' },
+  { label: 'Aseguramiento', suffix: '/aseguramiento', icon: 'AseguramientoIcon', code: '05' },
+  { label: 'Marcos normativos', suffix: '/marcos', icon: 'MarcosIcon', code: '06' },
+  { label: 'Informe', suffix: '/informe', icon: 'InformeIcon', code: '07' },
+];
+
+const adminItems: Array<{
+  label: string;
+  suffix: string;
+  icon: string;
+  code: string;
+}> = [
+  { label: 'Usuarios y roles', suffix: '/usuarios', icon: 'UsersIcon', code: '—' },
+  { label: 'Movimientos', suffix: '/movimientos', icon: 'MovementsIcon', code: '—' },
 ];
 
 export default function CaseSidebar({ caseId, caseName, caseNumber }: CaseSidebarProps) {
@@ -35,19 +43,17 @@ export default function CaseSidebar({ caseId, caseName, caseNumber }: CaseSideba
   const { resetDemo, isHydrated } = useCaseData();
   const { canManageMembers } = useAuth();
   const base = `/casos/${caseId}`;
-  const visibleNavItems = navItems.filter(item => !item.requiresAdmin || canManageMembers);
 
   return (
     <aside className="flex w-full shrink-0 flex-col border-b border-rule bg-[#0A0E14] md:h-full md:min-h-0 md:w-60 md:border-b-0 md:border-r">
       <div className="border-b border-rule p-3 md:p-4">
         <div className="flex items-center gap-3 md:mb-4">
-          <AuditMark compact />
           <div className="min-w-0">
             <div
               className="text-[9px] uppercase tracking-[0.18em] text-ink-muted"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
-              Indice de expediente
+              Índice de expediente
             </div>
             <div
               className="truncate font-display text-lg font-semibold leading-tight text-ink"
@@ -63,35 +69,49 @@ export default function CaseSidebar({ caseId, caseName, caseNumber }: CaseSideba
       </div>
 
       <nav className="flex gap-1 overflow-x-auto p-2 md:block md:flex-1 md:overflow-x-visible md:overflow-y-auto">
-        {visibleNavItems.map(item => {
+        {navItems.map(item => {
           const href = `${base}${item.suffix}`;
           const isActive = item.suffix === ''
             ? pathname === base
             : pathname.startsWith(href);
 
           return (
-            <Link
+            <SidebarLink
               key={item.suffix}
               href={href}
-              className={`
-                flex shrink-0 items-center gap-2.5 border px-3 py-2.5 text-sm transition-all md:mb-1
-                ${isActive
-                  ? 'audit-file-tab border-signal/45 bg-paper-warm text-ink shadow-[0_0_22px_rgba(216,164,55,0.08)]'
-                  : 'border-transparent text-ink-muted hover:border-rule hover:bg-paper-warm/70 hover:text-ink-soft'
-                }
-              `}
-            >
-              <span
-                className={`font-mono text-[9px] ${isActive ? 'text-signal' : 'text-ink-muted'}`}
-                style={{ fontFamily: 'var(--font-mono)' }}
-              >
-                {item.code}
-              </span>
-              <SidebarIcon name={item.icon} active={isActive} />
-              <span className="whitespace-nowrap">{item.label}</span>
-            </Link>
+              isActive={isActive}
+              code={item.code}
+              icon={item.icon}
+              label={item.label}
+            />
           );
         })}
+
+        {canManageMembers && (
+          <>
+            <div className="my-2 hidden border-t border-rule/60 md:block" />
+            <div
+              className="hidden px-3 py-1.5 text-[8px] uppercase tracking-[0.16em] text-ink-muted md:block"
+              style={{ fontFamily: 'var(--font-mono)' }}
+            >
+              Administración
+            </div>
+            {adminItems.map(item => {
+              const href = `${base}${item.suffix}`;
+              const isActive = pathname.startsWith(href);
+              return (
+                <SidebarLink
+                  key={item.suffix}
+                  href={href}
+                  isActive={isActive}
+                  code={item.code}
+                  icon={item.icon}
+                  label={item.label}
+                />
+              );
+            })}
+          </>
+        )}
       </nav>
 
       <div className="flex items-center gap-3 border-t border-rule p-3 md:block md:p-4">
@@ -119,8 +139,44 @@ export default function CaseSidebar({ caseId, caseName, caseNumber }: CaseSideba
   );
 }
 
+function SidebarLink({
+  href,
+  isActive,
+  code,
+  icon,
+  label,
+}: {
+  href: string;
+  isActive: boolean;
+  code: string;
+  icon: string;
+  label: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`
+        flex shrink-0 items-center gap-2.5 border px-3 py-2.5 text-sm transition-all md:mb-0.5
+        ${isActive
+          ? 'audit-file-tab border-rule bg-paper-warm text-ink'
+          : 'border-transparent text-ink-muted hover:border-rule hover:bg-paper-warm/70 hover:text-ink-soft'
+        }
+      `}
+    >
+      <span
+        className={`font-mono text-[9px] ${isActive ? 'text-signal' : 'text-ink-muted'}`}
+        style={{ fontFamily: 'var(--font-mono)' }}
+      >
+        {code}
+      </span>
+      <SidebarIcon name={icon} active={isActive} />
+      <span className="whitespace-nowrap">{label}</span>
+    </Link>
+  );
+}
+
 function SidebarIcon({ name, active }: { name: string; active: boolean }) {
-  const color = active ? 'currentColor' : 'currentColor';
+  const color = 'currentColor';
   const icons: Record<string, React.ReactNode> = {
     ResumenIcon: (
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -164,6 +220,19 @@ function SidebarIcon({ name, active }: { name: string; active: boolean }) {
         <circle cx="11" cy="7" r="1.5" fill={color} />
         <line x1="4" y1="4" x2="4" y2="7" stroke={color} strokeWidth="1" />
         <line x1="7" y1="4" x2="7" y2="7" stroke={color} strokeWidth="1" />
+      </svg>
+    ),
+    AseguramientoIcon: (
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M7 1L12 3.5V7c0 2.5-2 4.5-5 6-3-1.5-5-3.5-5-6V3.5L7 1z" stroke={color} strokeWidth="1.2" />
+        <path d="M5 7l1.5 1.5L9.5 5" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+    MarcosIcon: (
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <circle cx="7" cy="7" r="5.5" stroke={color} strokeWidth="1.2" />
+        <line x1="7" y1="1.5" x2="7" y2="12.5" stroke={color} strokeWidth="0.8" />
+        <line x1="1.5" y1="7" x2="12.5" y2="7" stroke={color} strokeWidth="0.8" />
       </svg>
     ),
     InformeIcon: (

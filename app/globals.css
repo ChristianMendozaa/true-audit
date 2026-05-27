@@ -86,7 +86,7 @@ body {
     url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 128px;
-  opacity: 0.025;
+  opacity: 0.015;
   pointer-events: none;
   z-index: 9999;
 }
@@ -108,12 +108,9 @@ body {
 }
 
 .audit-file-surface {
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.025), transparent 42%),
-    linear-gradient(90deg, rgba(216,164,55,0.045), transparent 34%),
-    #101721;
-  border: 1px solid rgba(58, 68, 85, 0.9);
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
+  background: #101721;
+  border: 1px solid rgba(48, 56, 71, 0.7);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
 .audit-file-tab {
@@ -144,6 +141,24 @@ body {
 .field-input:focus {
   border-color: var(--color-signal);
   box-shadow: 0 0 0 1px rgba(216, 164, 55, 0.2);
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+}
+
+.check-row:hover {
+  color: var(--color-ink);
+}
+
+.check-row input[type="checkbox"] {
+  accent-color: var(--color-signal);
 }
 
 .field-input::placeholder {
@@ -178,12 +193,12 @@ body {
 
 .forensic-board-atmosphere {
   background-image:
-    linear-gradient(120deg, rgba(232, 225, 208, 0.045), transparent 28%, rgba(224, 89, 63, 0.035) 62%, transparent),
-    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
-    radial-gradient(circle at 1px 1px, rgba(232, 225, 208, 0.08) 1px, transparent 1.4px);
+    linear-gradient(120deg, rgba(232, 225, 208, 0.03), transparent 28%, rgba(224, 89, 63, 0.02) 62%, transparent),
+    linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+    radial-gradient(circle at 1px 1px, rgba(232, 225, 208, 0.05) 1px, transparent 1.4px);
   background-size: 100% 100%, 100% 6px, 9px 9px;
   mix-blend-mode: screen;
-  opacity: 0.2;
+  opacity: 0.15;
 }
 
 .print-document {

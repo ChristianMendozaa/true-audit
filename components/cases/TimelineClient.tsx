@@ -130,25 +130,6 @@ export default function TimelineClient() {
       )}
 
       <Timeline eventos={eventosOrdenados} />
-
-      <div className="mt-8 grid gap-3 md:grid-cols-5">
-        {[
-          { n: caso.timeline.filter(e => e.tipo === 'solicitud-info' || e.tipo === 'recepcion-evidencia').length, l: 'Solicitudes / recepciones' },
-          { n: caso.timeline.filter(e => e.tipo === 'entrevista').length, l: 'Entrevistas' },
-          { n: caso.timeline.filter(e => e.tipo === 'prueba-aplicada').length, l: 'Pruebas aplicadas' },
-          { n: caso.timeline.filter(e => e.tipo === 'hallazgo-emitido').length, l: 'Hallazgos' },
-          { n: caso.timeline.filter(e => e.tipo === 'respuesta-banco').length, l: 'Respuestas banco' },
-        ].map(item => (
-          <div key={item.l} className="audit-file-surface p-4">
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', color: '#F0E7D6', fontWeight: 700, letterSpacing: '0em' }}>
-              {item.n}
-            </span>
-            <div className="mt-1 text-[10px] uppercase tracking-[0.12em] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
-              {item.l}
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
