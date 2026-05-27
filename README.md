@@ -4,7 +4,7 @@ True Audit is a visual CAAT (Computer-Assisted Audit Tool) for systems auditing.
 
 The tool works as a forensic audit file: evidence, documents, test sheets, findings, COBIT/COSO/RGSI criteria, auditee responses, timeline, visual board, and printable report.
 
-## What problem it solves
+## What problem it solves   
 
 In a systems audit, a finding must be defensible. True Audit organizes the chain:
 
