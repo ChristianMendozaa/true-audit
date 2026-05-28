@@ -7,6 +7,7 @@ import FindingChain from '@/components/visual/FindingChain';
 import StatusPill from '@/components/data/StatusPill';
 import SectionRule from '@/components/shell/SectionRule';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { calculateFindingSupport, supportStatusLabel, type FindingSupportStatus } from '@/lib/audit-analysis';
 import type { DecisionAuditor, RespuestaAuditado } from '@/lib/types';
 
 type ResponseDraft = {
@@ -17,6 +18,12 @@ type ResponseDraft = {
   evidenciaPresentada: string;
   comentarioAuditor: string;
   decisionAuditor: DecisionAuditor;
+};
+
+const supportClasses: Record<FindingSupportStatus, string> = {
+  defendible: 'border-olive/50 bg-olive/10 text-olive',
+  parcial: 'border-amber-signal/50 bg-amber-signal/10 text-amber-signal',
+  debil: 'border-vermilion/55 bg-vermilion/10 text-vermilion',
 };
 
 function emptyResponse(): ResponseDraft {
@@ -45,6 +52,7 @@ export default function FindingDetailClient({ caseId, findingId }: { caseId: str
     if (!hallazgo) return [];
     return caso.respuestasAuditado.filter(r => r.hallazgoId === hallazgo.id);
   }, [caso.respuestasAuditado, hallazgo]);
+  const support = useMemo(() => hallazgo ? calculateFindingSupport(caso, hallazgo) : null, [caso, hallazgo]);
 
   if (!hallazgo) {
     return (
@@ -91,6 +99,7 @@ export default function FindingDetailClient({ caseId, findingId }: { caseId: str
             </span>
             <StatusPill status={hallazgo.severidad} />
             <StatusPill status={hallazgo.estadoRespuesta} />
+            {support && <SupportBadge score={support.score} status={support.status} />}
           </div>
           <div className="font-mono text-xs text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
             Emitido {hallazgo.fechaEmision}
@@ -107,6 +116,34 @@ export default function FindingDetailClient({ caseId, findingId }: { caseId: str
         <Metric label="Riesgo" value={hallazgo.nivelRiesgo.toUpperCase()} />
         <Metric label="Estado" value={hallazgo.estado} />
       </div>
+
+      {support && (
+        <div className="audit-file-surface mb-8 p-5">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
+              Semaforo de sustentacion
+            </div>
+            <Link
+              href={`/casos/${caseId}/hallazgos/${hallazgo.id}/defensa`}
+              className="border border-signal/45 bg-signal/10 px-3 py-1.5 text-xs text-signal transition-colors hover:border-signal hover:text-ink"
+            >
+              Abrir vista defensa
+            </Link>
+          </div>
+          {support.missingItems.length > 0 ? (
+            <div className="grid gap-2 md:grid-cols-2">
+              {support.missingItems.slice(0, 6).map(item => (
+                <div key={item.id} className="border-l border-rule pl-3">
+                  <div className="text-sm text-ink">{item.label}</div>
+                  <div className="mt-0.5 text-xs text-ink-muted">{item.action}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-olive">El hallazgo no tiene faltantes materiales para defensa documental.</p>
+          )}
+        </div>
+      )}
 
       <SectionRule label="Cadena de trazabilidad" number={1} />
       <div className="mb-10 animate-fade-up opacity-0" style={{ animationFillMode: 'forwards', animationDelay: '100ms' }}>
@@ -231,6 +268,17 @@ function Metric({ label, value }: { label: string; value: string }) {
       <div className="mb-1 text-[10px] uppercase tracking-widest text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>{label}</div>
       <div className="font-mono text-sm text-ink" style={{ fontFamily: 'var(--font-mono)' }}>{value}</div>
     </div>
+  );
+}
+
+function SupportBadge({ score, status }: { score: number; status: FindingSupportStatus }) {
+  return (
+    <span
+      className={`border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] ${supportClasses[status]}`}
+      style={{ fontFamily: 'var(--font-mono)' }}
+    >
+      {score}% {supportStatusLabel(status)}
+    </span>
   );
 }
 

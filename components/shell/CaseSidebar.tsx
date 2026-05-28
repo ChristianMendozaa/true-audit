@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import AuditMark from './AuditMark';
 import { useCaseData } from '@/components/data/CaseDataProvider';
 import { useAuth } from '@/components/auth/AuthProvider';
 

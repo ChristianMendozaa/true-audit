@@ -6,9 +6,12 @@ const routes = [
   '/casos/2026-014/evidencias',
   '/casos/2026-014/hallazgos',
   '/casos/2026-014/hallazgos/H-001',
+  '/casos/2026-014/hallazgos/H-001/defensa',
   '/casos/2026-014/tablero',
   '/casos/2026-014/kanban',
   '/casos/2026-014/timeline',
+  '/casos/2026-014/aseguramiento',
+  '/casos/2026-014/marcos',
   '/casos/2026-014/informe',
   '/casos/2026-014/usuarios',
   '/casos/2026-014/movimientos',
@@ -143,23 +146,22 @@ test('flujo MVP permite crear evidencia y hallazgo en modo auditor', async ({ pa
   await page.getByRole('button', { name: 'Nueva evidencia' }).click();
   await expect(page.getByRole('heading', { name: 'Ficha documental' })).toBeVisible();
   await page.getByLabel('Tipo').selectOption('checklist');
-  await page.getByLabel('Titulo').fill('Checklist de privilegios de usuario');
-  await page.getByLabel('Descripcion').fill('Revision manual de cuentas privilegiadas contra la politica vigente.');
+  await page.getByLabel(/T.tulo/).fill('Checklist de privilegios de usuario');
+  await page.getByLabel(/Descripci.n/).fill('Revision manual de cuentas privilegiadas contra la politica vigente.');
   await page.getByLabel('Fuente').fill('Mesa de seguridad TI');
-  await page.getByLabel('Nombre de archivo').fill('checklist-privilegios.xlsx');
   await page.getByRole('button', { name: 'Guardar evidencia' }).click();
 
   await expect(page.getByRole('heading', { name: 'Checklist de privilegios de usuario' })).toBeVisible();
 
   await gotoReady(page, '/casos/2026-014/hallazgos');
   await page.getByRole('button', { name: 'Nuevo hallazgo' }).click();
-  await page.getByLabel('Titulo').fill('Cuentas privilegiadas sin revision formal');
-  await page.getByLabel('Condicion').fill('Se identificaron cuentas con privilegios elevados sin evidencia de revision periodica.');
+  await page.getByLabel(/T.tulo/).fill('Cuentas privilegiadas sin revision formal');
+  await page.getByLabel(/Condici.n/).fill('Se identificaron cuentas con privilegios elevados sin evidencia de revision periodica.');
   await page.getByLabel('Criterio').fill('COBIT PO7 y COSO actividades de control requieren roles definidos y supervision.');
   await page.getByLabel('Causa').fill('No existe calendario formal de revision de accesos privilegiados.');
   await page.getByLabel('Efecto').fill('Incremento de riesgo de uso indebido de privilegios.');
-  await page.getByLabel('Conclusion').fill('El control requiere formalizacion y evidencia de ejecucion.');
-  await page.getByLabel('Recomendacion').fill('Implantar revision trimestral con aprobacion del responsable de TI.');
+  await page.getByLabel(/Conclusi.n/).fill('El control requiere formalizacion y evidencia de ejecucion.');
+  await page.getByLabel(/Recomendaci.n/).fill('Implantar revision trimestral con aprobacion del responsable de TI.');
   await page.getByLabel('Probabilidad').fill('4');
   await page.getByLabel('Impacto').fill('4');
   await page.getByRole('button', { name: 'Guardar hallazgo' }).click();
@@ -186,6 +188,18 @@ test('rol auditado registra respuesta y modo demo bloquea edicion', async ({ pag
 });
 
 test('tablero e informe exponen trazabilidad y exportacion', async ({ page }) => {
+  await gotoReady(page, '/casos/2026-014/aseguramiento');
+  await expect(page.getByText('Semaforo de sustentacion')).toBeVisible();
+  await expect(page.getByText('Mapa de cobertura COBIT / COSO / RGSI')).toBeVisible();
+
+  await gotoReady(page, '/casos/2026-014/marcos');
+  await expect(page.getByText('Marcos normativos del caso')).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: 'Sustento prom.' }).first()).toBeVisible();
+
+  await gotoReady(page, '/casos/2026-014/hallazgos/H-001/defensa');
+  await expect(page.getByRole('heading', { name: 'Defensa del hallazgo' })).toBeVisible();
+  await expect(page.getByText('Trazabilidad textual')).toBeVisible();
+
   await gotoReady(page, '/casos/2026-014/tablero');
   await expect(page.getByText('Case board forense')).toBeVisible();
   expect(await page.locator('.board-node').count()).toBeGreaterThan(5);
@@ -198,7 +212,9 @@ test('tablero e informe exponen trazabilidad y exportacion', async ({ page }) =>
   await expect(page.getByRole('button', { name: 'Descargar fichas PDF' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Exportar matriz Excel' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Imprimir / Guardar PDF' })).toBeVisible();
-  await expect(page.getByText('Conclusiones')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Aseguramiento del Expediente' })).toBeVisible();
+  await expect(page.getByText('Bitacora de razonamiento del tablero')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Conclusiones' })).toBeVisible();
 });
 
 test('tablero permite crear nodos y conectar con relacion guiada', async ({ page }) => {
@@ -216,6 +232,15 @@ test('tablero permite crear nodos y conectar con relacion guiada', async ({ page
   await page.locator('.board-node').filter({ hasText: 'Nodo de prueba E2E' }).click();
   await page.locator('.board-node').filter({ hasText: 'H-001' }).click({ force: true });
   await expect(page.getByTestId('case-board-canvas').getByText('MITIGA')).toBeVisible();
+  await page.getByLabel('Justificacion de relacion').fill('Esta relacion documenta una decision de prueba para la bitacora del tablero.');
+  await page.getByLabel('Estado de relacion').selectOption('validada');
+  await page.getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.getByText('Bitacora de razonamiento')).toBeVisible();
+  await expect(page.locator('p').filter({ hasText: 'decision de prueba' })).toBeVisible();
+
+  await gotoReady(page, '/casos/2026-014/timeline');
+  await expect(page.getByText('Decisiones del tablero')).toBeVisible();
+  await expect(page.locator('article').filter({ hasText: 'decision de prueba' })).toBeVisible();
 });
 
 test('kanban cambia estado al mover tarjeta de hallazgo', async ({ page }) => {

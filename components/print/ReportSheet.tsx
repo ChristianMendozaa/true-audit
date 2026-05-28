@@ -2,6 +2,14 @@ import type { Caso } from '@/lib/types';
 import StatusPill from '@/components/data/StatusPill';
 import CriterioBadge from '@/components/data/CriterioBadge';
 import { getCriterioById } from '@/lib/frameworks';
+import {
+  buildRelationReasoningLog,
+  calculateFindingSupport,
+  calculateFrameworkCoverage,
+  detectTraceabilityGaps,
+  supportStatusLabel,
+  type FindingSupportStatus,
+} from '@/lib/audit-analysis';
 
 interface ReportSheetProps {
   caso: Caso;
@@ -11,6 +19,21 @@ export default function ReportSheet({ caso }: ReportSheetProps) {
   const criticos = caso.hallazgos.filter(h => h.severidad === 'critico');
   const medios   = caso.hallazgos.filter(h => h.severidad === 'medio');
   const bajos    = caso.hallazgos.filter(h => h.severidad === 'bajo');
+  const supportAnalysis = caso.hallazgos.map(hallazgo => ({
+    hallazgo,
+    support: calculateFindingSupport(caso, hallazgo),
+  }));
+  const supportByFinding = new Map(supportAnalysis.map(item => [item.hallazgo.id, item.support]));
+  const avgSupport = supportAnalysis.length > 0
+    ? Math.round(supportAnalysis.reduce((sum, item) => sum + item.support.score, 0) / supportAnalysis.length)
+    : 0;
+  const defendibles = supportAnalysis.filter(item => item.support.status === 'defendible').length;
+  const parciales = supportAnalysis.filter(item => item.support.status === 'parcial').length;
+  const debiles = supportAnalysis.filter(item => item.support.status === 'debil').length;
+  const coverage = calculateFrameworkCoverage(caso);
+  const gaps = detectTraceabilityGaps(caso);
+  const criticalGaps = gaps.filter(gap => gap.severidad === 'critica').length;
+  const reasoningLog = buildRelationReasoningLog(caso);
 
   return (
     <div className="print-document font-sans" style={{ fontFamily: 'var(--font-sans)' }}>
@@ -210,12 +233,89 @@ export default function ReportSheet({ caso }: ReportSheetProps) {
         </div>
       </div>
 
-      {/* ─── SECCIÓN 3: HALLAZGOS DETALLADOS ─── */}
+      {/* Seccion 3: aseguramiento del expediente */}
       <div className="border border-rule p-10 mb-8 print-break-before">
-        <SectionHeader num="03" title="Hallazgos Detallados" />
+        <SectionHeader num="03" title="Aseguramiento del Expediente" />
+        <p className="mt-5 text-sm leading-relaxed text-ink-muted">
+          True Audit no reemplaza el juicio profesional del auditor. Esta seccion resume completitud, trazabilidad y cobertura documental del expediente antes de emitir o defender el informe.
+        </p>
+
+        <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <AssuranceMetric value={`${avgSupport}%`} label="Sustentacion media" detail={`${defendibles} defendibles / ${parciales} parciales / ${debiles} debiles`} />
+          <AssuranceMetric value={criticalGaps} label="Huecos criticos" detail={`${gaps.length} observaciones totales`} />
+          <AssuranceMetric value={coverage.summary.covered} label="Criterios cubiertos" detail={`${coverage.summary.total} criterios COBIT/COSO/RGSI`} />
+          <AssuranceMetric value={coverage.summary.uncovered} label="Sin cubrir" detail="Criterios sin evidencia ni conclusion" />
+        </div>
+
+        <div className="mt-8 overflow-x-auto border border-rule">
+          <table className="w-full min-w-[720px] border-collapse text-left text-sm">
+            <thead>
+              <tr className="bg-[#0B0F15] text-[10px] uppercase tracking-wider text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
+                <th className="border-b border-rule px-3 py-2 font-medium">Hallazgo</th>
+                <th className="border-b border-rule px-3 py-2 font-medium">Sustento</th>
+                <th className="border-b border-rule px-3 py-2 font-medium">Estado</th>
+                <th className="border-b border-rule px-3 py-2 font-medium">Faltantes principales</th>
+              </tr>
+            </thead>
+            <tbody>
+              {supportAnalysis.map(({ hallazgo, support }) => (
+                <tr key={hallazgo.id} className="border-b border-rule-light last:border-b-0">
+                  <td className="px-3 py-2">
+                    <div className="font-mono text-[10px] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>{hallazgo.numero}</div>
+                    <div className="text-xs text-ink">{hallazgo.titulo}</div>
+                  </td>
+                  <td className="px-3 py-2">
+                    <span className="font-mono text-sm text-ink" style={{ fontFamily: 'var(--font-mono)' }}>{support.score}%</span>
+                  </td>
+                  <td className="px-3 py-2">
+                    <span className={`inline-flex border px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider ${supportStatusClass(support.status)}`} style={{ fontFamily: 'var(--font-mono)' }}>
+                      {supportStatusLabel(support.status)}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 text-xs text-ink-muted">
+                    {support.missingItems.length > 0
+                      ? support.missingItems.slice(0, 3).map(item => item.label).join(', ')
+                      : 'Sin faltantes materiales'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="mt-8 border border-rule p-4">
+          <div className="font-mono text-[10px] uppercase tracking-wider text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
+            Bitacora de razonamiento del tablero
+          </div>
+          {reasoningLog.length > 0 ? (
+            <div className="mt-3 space-y-3">
+              {reasoningLog.slice(0, 5).map(entry => (
+                <div key={entry.id} className="border-l border-rule pl-3">
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
+                    {entry.connection.id} / {entry.relationLabel} / {formatReportDate(entry.fecha)}
+                  </div>
+                  <p className="mt-1 text-xs leading-relaxed text-ink">{entry.detalle}</p>
+                  <p className="mt-1 text-[11px] leading-relaxed text-ink-muted">
+                    {entry.sourceLabel} -&gt; {entry.targetLabel}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 text-xs leading-relaxed text-ink-muted">
+              No hay justificaciones de relaciones registradas en el tablero.
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Seccion 4: hallazgos detallados */}
+      <div className="border border-rule p-10 mb-8 print-break-before">
+        <SectionHeader num="04" title="Hallazgos Detallados" />
         <div className="mt-6 space-y-10">
           {caso.hallazgos.map(h => {
             const criterios = h.criterios.map(id => getCriterioById(id)).filter(Boolean) as NonNullable<ReturnType<typeof getCriterioById>>[];
+            const support = supportByFinding.get(h.id);
             return (
               <div key={h.id} className="border-l-4 pl-6" style={{ borderColor: h.severidad === 'critico' ? '#C8412C' : h.severidad === 'medio' ? '#B88A1C' : '#5B7034' }}>
                 <div className="flex items-start justify-between gap-4 mb-3">
@@ -244,6 +344,26 @@ export default function ReportSheet({ caso }: ReportSheetProps) {
                     <CriterioBadge key={c.id} codigo={c.codigo} marco={c.marco} size="sm" />
                   ))}
                 </div>
+
+                {support && (
+                  <div className="mb-4 border border-rule bg-[#0B0F15]/50 p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <div className="font-mono text-[10px] uppercase tracking-wider text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
+                          Sustentacion True Audit
+                        </div>
+                        <div className="mt-1 text-sm text-ink">
+                          {support.score}% - {supportStatusLabel(support.status)}
+                        </div>
+                      </div>
+                      <div className="max-w-md text-right text-xs text-ink-muted">
+                        {support.missingItems.length > 0
+                          ? `Falta reforzar: ${support.missingItems.slice(0, 3).map(item => item.label).join(', ')}.`
+                          : 'El hallazgo tiene trazabilidad documental suficiente para defensa.'}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="mb-4 grid grid-cols-4 gap-2 text-sm">
                   <FindingBlock label="Probabilidad" text={String(h.probabilidad)} />
@@ -278,9 +398,9 @@ export default function ReportSheet({ caso }: ReportSheetProps) {
         </div>
       </div>
 
-      {/* ─── SECCIÓN 4: CONCLUSIONES ─── */}
+      {/* Seccion 5: conclusiones */}
       <div className="border border-rule p-10 print-break-before">
-        <SectionHeader num="04" title="Conclusiones" />
+        <SectionHeader num="05" title="Conclusiones" />
         <div className="mt-6 text-sm text-ink leading-relaxed space-y-4">
           <p>
             Con base en el trabajo de auditoría realizado, el equipo concluye que <strong>{caso.banco}</strong> presenta
@@ -351,6 +471,30 @@ function InfoRow({ label, value }: { label: string; value: string }) {
       <span className="text-ink">{value}</span>
     </div>
   );
+}
+
+function formatReportDate(value: string) {
+  const [datePart, timePart] = value.split('T');
+  const [year = '', month = '', day = ''] = datePart.split('-');
+  return `${day}/${month}/${year}${timePart ? ` ${timePart.slice(0, 5)}` : ''}`;
+}
+
+function AssuranceMetric({ value, label, detail }: { value: string | number; label: string; detail: string }) {
+  return (
+    <div className="border border-rule bg-[#0B0F15]/45 p-4">
+      <div className="font-display text-2xl font-bold text-ink" style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}>
+        {value}
+      </div>
+      <div className="mt-1 text-xs font-medium text-ink">{label}</div>
+      <div className="mt-1 text-[10px] leading-snug text-ink-muted">{detail}</div>
+    </div>
+  );
+}
+
+function supportStatusClass(status: FindingSupportStatus) {
+  if (status === 'defendible') return 'border-olive/50 bg-olive/10 text-olive';
+  if (status === 'parcial') return 'border-amber-signal/50 bg-amber-signal/10 text-amber-signal';
+  return 'border-vermilion/55 bg-vermilion/10 text-vermilion';
 }
 
 function FindingBlock({ label, text }: { label: string; text: string }) {

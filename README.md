@@ -26,7 +26,11 @@ The app does not invent findings, does not automatically evaluate documents, and
 - Simulated roles: `auditor`, `auditee`, and `demo`.
 - CaseBoard connected to editable data, with a diagramming-style toolbar, shape palette, node creation, guided connectors, and persistent positions.
 - Case Kanban module for evidence, findings, and responses by operational status.
-- Timeline connected to the editable case with manual event entry.
+- Assurance engine with finding support score, traceability gaps, framework coverage, and topological impact analysis.
+- Dedicated finding defense view for oral/academic explanation.
+- Assisted finding builder based on local rules and templates, without external AI services.
+- Board connection reasoning log for auditable relationship justification.
+- Timeline connected to the editable case with manual event entry and consolidated reasoning decisions from board connections.
 - Printable report from the browser.
 - Academic exports: final report PDF, finding sheet PDFs, and COBIT matrix `.xlsx`.
 - Test suite with unit/component/integration/E2E tests.

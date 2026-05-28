@@ -1,6 +1,6 @@
 import ExcelJS from 'exceljs';
 import type { Caso } from '@/lib/types';
-import { findingCriteriaText, findingEvidenceText, findingResponseText } from './report-data';
+import { findingCriteriaText, findingEvidenceText, findingResponseText, findingSupportText } from './report-data';
 
 const widths = [4, 30, 9, 7, 8, 9, 36, 36, 31, 4, 4, 9, 13, 32];
 
@@ -85,7 +85,7 @@ export async function renderMatrizCobitXlsx(caso: Caso): Promise<Buffer> {
     row.height = 78;
     row.getCell('A').value = index + 1;
     row.getCell('B').value = `${hallazgo.numero} - ${hallazgo.titulo}\n${hallazgo.condicion}`;
-    row.getCell('B').note = `Evidencias asociadas: ${findingEvidenceText(caso, hallazgo)}\nRespuesta del auditado: ${findingResponseText(caso, hallazgo)}`;
+    row.getCell('B').note = `Evidencias asociadas: ${findingEvidenceText(caso, hallazgo)}\nRespuesta del auditado: ${findingResponseText(caso, hallazgo)}\nSustentacion True Audit: ${findingSupportText(caso, hallazgo)}`;
     row.getCell('G').value = `${findingCriteriaText(hallazgo)}\n${hallazgo.criterio}`;
     row.getCell('H').value = `Causa: ${hallazgo.causa}\nEfecto: ${hallazgo.efecto}`;
     row.getCell('I').value = hallazgo.conclusion;

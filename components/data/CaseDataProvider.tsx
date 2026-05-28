@@ -170,6 +170,7 @@ export default function CaseDataProvider({
     authReady,
     idToken,
     isAuthenticated,
+    usuario,
     canEditAuditWork,
     canRegisterResponse,
     setCaseMembership,
@@ -631,6 +632,20 @@ export default function CaseDataProvider({
         etiqueta,
         estilo: options?.estilo ?? 'curva',
         flecha: options?.flecha ?? true,
+        justificacion: options?.justificacion,
+        estado: options?.estado ?? (options?.justificacion?.trim() ? 'validada' : 'borrador'),
+        createdAt: options?.createdAt ?? new Date().toISOString(),
+        updatedAt: options?.updatedAt ?? new Date().toISOString(),
+        createdBy: options?.createdBy ?? usuario.rol,
+        reasoningLog: options?.reasoningLog ?? [
+          {
+            id: `${options?.id ?? nextNumericId('C', current.conexionesTablero.map(c => c.id))}-LOG-001`,
+            fecha: new Date().toISOString(),
+            accion: options?.justificacion?.trim() ? 'justificada' : 'creada',
+            detalle: options?.justificacion?.trim() || `Relacion ${etiqueta} creada en el tablero.`,
+            usuarioRol: usuario.rol,
+          },
+        ],
       };
 
       return {
@@ -641,7 +656,7 @@ export default function CaseDataProvider({
       };
     });
     return saved;
-  }, []);
+  }, [usuario.rol]);
 
   const updateBoardConnection = useCallback((id: string, patch: Partial<ConexionTablero>) => {
     updateCaso(current => ({

@@ -12,6 +12,7 @@ export default function TableroClient() {
     addBoardNode,
     deleteBoardNode,
     addBoardConnection,
+    updateBoardConnection,
     deleteBoardConnection,
   } = useCaseData();
   const { canEditAuditWork } = useAuth();
@@ -36,6 +37,7 @@ export default function TableroClient() {
         onAddNode={canEditAuditWork ? addBoardNode : undefined}
         onDeleteNode={canEditAuditWork ? deleteBoardNode : undefined}
         onAddConnection={canEditAuditWork ? addBoardConnection : undefined}
+        onUpdateConnection={canEditAuditWork ? updateBoardConnection : undefined}
         onDeleteConnection={canEditAuditWork ? deleteBoardConnection : undefined}
       />
     </div>

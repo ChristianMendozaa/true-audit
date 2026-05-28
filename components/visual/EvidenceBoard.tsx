@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import type { Caso, ConexionTablero, FiguraNodo, NodoTablero, Severidad, TipoNodo, TipoRelacion } from '@/lib/types';
+import type { Caso, ConexionTablero, EstadoConexionTablero, FiguraNodo, NodoTablero, Severidad, TipoNodo, TipoRelacion } from '@/lib/types';
 import { getCriterioById } from '@/lib/frameworks';
 import NodeShape from './NodeShape';
 import ConnectionLine from './ConnectionLine';
@@ -21,6 +21,7 @@ interface EvidenceBoardProps {
     etiqueta: TipoRelacion,
     options?: Partial<ConexionTablero>,
   ) => ConexionTablero;
+  onUpdateConnection?: (id: string, patch: Partial<ConexionTablero>) => void;
   onDeleteConnection?: (id: string) => void;
 }
 
@@ -157,6 +158,7 @@ export default function EvidenceBoard({
   onAddNode,
   onDeleteNode,
   onAddConnection,
+  onUpdateConnection,
   onDeleteConnection,
 }: EvidenceBoardProps) {
   const [nodos, setNodos] = useState<NodoTablero[]>(initialNodos);
@@ -722,10 +724,13 @@ export default function EvidenceBoard({
 
       {(selectedNodo || selectedConnection) && (
         <DetailPanel
+          key={selectedConnection?.id ?? selectedNodo?.id}
           caso={caso}
           nodo={selectedNodo}
           connection={selectedConnection}
           nodeById={nodeById}
+          canEdit={canEdit}
+          onUpdateConnection={onUpdateConnection}
           onClose={() => {
             setSelectedId(null);
             setSelectedConnectionId(null);
@@ -1336,14 +1341,20 @@ function DetailPanel({
   nodo,
   connection,
   nodeById,
+  canEdit,
+  onUpdateConnection,
   onClose,
 }: {
   caso: Caso;
   nodo: NodoTablero | null;
   connection: ConexionTablero | null;
   nodeById: Map<string, NodoTablero>;
+  canEdit: boolean;
+  onUpdateConnection?: (id: string, patch: Partial<ConexionTablero>) => void;
   onClose: () => void;
 }) {
+  const [connectionJustification, setConnectionJustification] = useState(connection?.justificacion ?? '');
+  const [connectionStatus, setConnectionStatus] = useState<EstadoConexionTablero>(connection?.estado ?? 'borrador');
   const hallazgo = nodo?.tipo === 'hallazgo'
     ? caso.hallazgos.find(h => h.id === nodo.refId) ?? null
     : null;
@@ -1372,6 +1383,33 @@ function DetailPanel({
   const code = connection ? connection.id : nodo?.refId ?? '';
   const panelType = connection ? normalizeRelation(connection.etiqueta).toUpperCase() : nodo ? tipoLongLabels[nodo.tipo] : '';
   const accent = connection ? relationColor(connection.etiqueta) : nodo ? tipoColors[nodo.tipo] : '#D8AD4C';
+
+  const saveConnectionReasoning = () => {
+    if (!connection || !canEdit || !onUpdateConnection) return;
+    const now = new Date().toISOString();
+    const detail = connectionJustification.trim();
+    const logIndex = (connection.reasoningLog?.length ?? 0) + 1;
+    onUpdateConnection(connection.id, {
+      justificacion: detail,
+      estado: connectionStatus,
+      updatedAt: now,
+      reasoningLog: [
+        ...(connection.reasoningLog ?? []),
+        {
+          id: `${connection.id}-LOG-${String(logIndex).padStart(3, '0')}`,
+          fecha: now,
+          accion: connectionStatus === 'validada'
+            ? 'validada'
+            : connectionStatus === 'requiere-revision'
+              ? 'requiere-revision'
+              : detail
+                ? 'justificada'
+                : 'actualizada',
+          detalle: detail || 'Relacion actualizada sin justificacion textual.',
+        },
+      ],
+    });
+  };
 
   return (
     <aside className="absolute right-0 top-0 z-30 h-full w-[380px] overflow-y-auto border-l border-wire bg-[#111721]/96 shadow-[-22px_0_50px_rgba(0,0,0,0.46)] backdrop-blur animate-slide-in-right">
@@ -1441,6 +1479,61 @@ function DetailPanel({
                 {relationNarrative(connection.etiqueta)}
               </p>
             </PanelSection>
+            <PanelSection title="Justificacion auditable">
+              <div className="space-y-3">
+                <textarea
+                  value={connectionJustification}
+                  onChange={event => setConnectionJustification(event.target.value)}
+                  disabled={!canEdit}
+                  className="field-input min-h-28 resize-y text-xs disabled:cursor-not-allowed disabled:opacity-60"
+                  placeholder="Explica por que esta relacion sostiene el razonamiento del expediente."
+                  aria-label="Justificacion de relacion"
+                />
+                <div className="grid grid-cols-[1fr_auto] gap-2">
+                  <select
+                    value={connectionStatus}
+                    onChange={event => setConnectionStatus(event.target.value as EstadoConexionTablero)}
+                    disabled={!canEdit}
+                    className="field-input py-2 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+                    aria-label="Estado de relacion"
+                  >
+                    <option value="borrador">Borrador</option>
+                    <option value="validada">Validada</option>
+                    <option value="requiere-revision">Requiere revision</option>
+                  </select>
+                  <button
+                    type="button"
+                    onClick={saveConnectionReasoning}
+                    disabled={!canEdit || !onUpdateConnection}
+                    className="border border-signal/45 bg-signal/10 px-3 py-2 text-xs font-semibold text-signal transition-colors hover:border-signal disabled:cursor-not-allowed disabled:opacity-45"
+                  >
+                    Guardar
+                  </button>
+                </div>
+                {!connection.justificacion?.trim() && (
+                  <p className="border border-signal/35 bg-signal/5 p-2 text-[11px] leading-relaxed text-signal">
+                    Esta relacion aun no tiene justificacion. El detector de huecos la marcara como pendiente.
+                  </p>
+                )}
+              </div>
+            </PanelSection>
+            {(connection.reasoningLog ?? []).length > 0 && (
+              <PanelSection title="Bitacora de razonamiento">
+                <div className="space-y-2">
+                  {(connection.reasoningLog ?? []).slice().reverse().map(entry => (
+                    <div key={entry.id} className="border-l border-wire pl-3">
+                      <div
+                        className="font-mono text-[9px] uppercase tracking-[0.12em] text-signal"
+                        style={{ fontFamily: 'var(--font-mono)' }}
+                      >
+                        {entry.fecha.slice(0, 16).replace('T', ' ')} / {entry.accion}
+                      </div>
+                      <p className="mt-0.5 text-xs leading-relaxed text-bone-muted">{entry.detalle}</p>
+                    </div>
+                  ))}
+                </div>
+              </PanelSection>
+            )}
           </>
         )}
 

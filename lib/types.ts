@@ -173,6 +173,16 @@ export interface NodoTablero {
   locked?: boolean;
 }
 
+export type EstadoConexionTablero = 'borrador' | 'validada' | 'requiere-revision';
+
+export interface RelationReasoningEntry {
+  id: string;
+  fecha: string;
+  accion: 'creada' | 'justificada' | 'actualizada' | 'validada' | 'requiere-revision';
+  detalle: string;
+  usuarioRol?: RolUsuario | RolCaso | string;
+}
+
 export interface ConexionTablero {
   id: string;
   desde: string;
@@ -180,6 +190,12 @@ export interface ConexionTablero {
   etiqueta?: TipoRelacion | string;
   estilo?: 'curva' | 'recta' | 'ortogonal';
   flecha?: boolean;
+  justificacion?: string;
+  estado?: EstadoConexionTablero;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  reasoningLog?: RelationReasoningEntry[];
 }
 
 export interface Caso {

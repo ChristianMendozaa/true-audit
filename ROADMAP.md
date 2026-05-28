@@ -22,6 +22,7 @@ True Audit ya funciona como MVP local para exposicion academica: expediente demo
 - Fase 14 completada en MVP: revision del flujo completo de exposicion.
 - Fase 15 completada en MVP: documentacion final actualizada.
 - Fase 16 completada: pruebas automatizadas y control de calidad final.
+- Fase 17 completada: motor de aseguramiento del expediente con semaforo de sustentacion, detector de huecos, mapa de cobertura, vista de defensa, bitacora de relaciones integrada a timeline, impacto topologico y constructor asistido por reglas locales.
 - Entrega complementaria completada: modulo Kanban y exportes PDF/Excel basados en los documentos academicos de referencia.
 - Refinamiento posterior completado: informe final, fichas U2 y matriz COBIT ajustados contra `docs/Informe_Final_Auditoria_RGSI_COBIT_Banco_Debilidad_HISTORIAL (1).docx`, `docs/U2 Hallazgos y Controles Cobit  (Encontrados) (3).docx` y `docs/matriz cobit.xlsx`.
 
@@ -36,6 +37,7 @@ True Audit ya funciona como MVP local para exposicion academica: expediente demo
 - `components/visual/EvidenceBoard.tsx`: tablero visual.
 - `components/cases/*`: pantallas cliente conectadas a datos editables.
 - `lib/kanban.ts`: derivacion de tarjetas y columnas Kanban desde el caso editable.
+- `lib/audit-analysis`: motor puro de sustentacion, cobertura, huecos, topologia, defensa, bitacora de razonamiento y borrador asistido por reglas.
 - `lib/exports/*`: generacion de informe PDF, fichas PDF y matriz COBIT Excel.
 - `app/api/casos/[caseId]/data`: endpoint interno de persistencia Firestore.
 - `app/api/casos/[caseId]/exports/*`: endpoints internos de exportacion por POST.

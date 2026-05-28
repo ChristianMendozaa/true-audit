@@ -4,7 +4,15 @@ import { useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import Link from 'next/link';
 import { todosLosCriterios } from '@/lib/frameworks';
 import { calculateRiskLevel, calculateRiskScore, calculateSeveridad } from '@/lib/risk';
-import type { EstadoHallazgo, Hallazgo } from '@/lib/types';
+import {
+  calculateFindingSupport,
+  generateAssistedFindingDraft,
+  supportStatusLabel,
+  type AssistedFindingDraft,
+  type AssistedFindingSuggestion,
+  type FindingSupportStatus,
+} from '@/lib/audit-analysis';
+import type { Caso, EstadoHallazgo, Hallazgo } from '@/lib/types';
 import { useCaseData } from '@/components/data/CaseDataProvider';
 import StatusPill from '@/components/data/StatusPill';
 import CriterioBadge from '@/components/data/CriterioBadge';
@@ -12,8 +20,15 @@ import { useAuth } from '@/components/auth/AuthProvider';
 
 const severidadOrder = { critico: 0, medio: 1, bajo: 2 };
 
+const supportClasses: Record<FindingSupportStatus, string> = {
+  defendible: 'border-olive/50 bg-olive/10 text-olive',
+  parcial: 'border-amber-signal/50 bg-amber-signal/10 text-amber-signal',
+  debil: 'border-vermilion/55 bg-vermilion/10 text-vermilion',
+};
+
 type FindingDraft = {
   id?: string;
+  descripcionInicial: string;
   numero: string;
   titulo: string;
   condicion: string;
@@ -35,10 +50,14 @@ type FindingDraft = {
   respuestaBanco: string;
   respuestasAuditado: string[];
   addToBoard: boolean;
+  assistedDraft: AssistedFindingDraft | null;
+  acceptedSuggestions: string[];
+  discardedSuggestions: string[];
 };
 
 function emptyDraft(nextNumber: string): FindingDraft {
   return {
+    descripcionInicial: '',
     numero: nextNumber,
     titulo: '',
     condicion: '',
@@ -60,12 +79,16 @@ function emptyDraft(nextNumber: string): FindingDraft {
     respuestaBanco: '',
     respuestasAuditado: [],
     addToBoard: true,
+    assistedDraft: null,
+    acceptedSuggestions: [],
+    discardedSuggestions: [],
   };
 }
 
 function draftFromFinding(h: Hallazgo): FindingDraft {
   return {
     id: h.id,
+    descripcionInicial: h.condicion,
     numero: h.numero,
     titulo: h.titulo,
     condicion: h.condicion,
@@ -87,6 +110,9 @@ function draftFromFinding(h: Hallazgo): FindingDraft {
     respuestaBanco: h.respuestaBanco ?? '',
     respuestasAuditado: h.respuestasAuditado ?? [],
     addToBoard: true,
+    assistedDraft: null,
+    acceptedSuggestions: [],
+    discardedSuggestions: [],
   };
 }
 
@@ -123,6 +149,9 @@ export default function HallazgosPage() {
   }, [hallazgosActivos, severityFilter, responseFilter]);
 
   const selectedHallazgo = selectedId ? caso.hallazgos.find(h => h.id === selectedId) : null;
+  const supportById = useMemo(() => new Map(
+    hallazgosActivos.map(hallazgo => [hallazgo.id, calculateFindingSupport(caso, hallazgo)])
+  ), [caso, hallazgosActivos]);
 
   const startNew = () => {
     if (!canEditAuditWork) return;
@@ -243,12 +272,13 @@ export default function HallazgosPage() {
                 <th className="border-b border-rule px-3 py-2.5 font-medium">Hallazgo</th>
                 <th className="border-b border-rule px-3 py-2.5 font-medium">Riesgo</th>
                 <th className="border-b border-rule px-3 py-2.5 font-medium">Respuesta</th>
-                <th className="border-b border-rule px-3 py-2.5 font-medium text-center">Evd.</th>
+                <th className="border-b border-rule px-3 py-2.5 font-medium text-center">Sust.</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map(h => {
                 const isSelected = selectedId === h.id && !draft;
+                const support = supportById.get(h.id);
                 return (
                   <tr
                     key={h.id}
@@ -263,8 +293,8 @@ export default function HallazgosPage() {
                     <td className="max-w-64 truncate px-3 py-2.5 text-ink">{h.titulo}</td>
                     <td className="px-3 py-2.5"><StatusPill status={h.severidad} size="sm" /></td>
                     <td className="px-3 py-2.5"><StatusPill status={h.estadoRespuesta} size="sm" /></td>
-                    <td className="px-3 py-2.5 text-center font-mono text-[10px] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
-                      {h.evidencias.length}
+                    <td className="px-3 py-2.5 text-center">
+                      {support && <SupportBadge score={support.score} status={support.status} />}
                     </td>
                   </tr>
                 );
@@ -288,12 +318,14 @@ export default function HallazgosPage() {
               setDraft={setDraft}
               onSave={saveDraft}
               onCancel={() => setDraft(null)}
+              caso={caso}
               evidencias={caso.evidencias.filter(e => !e.descartada)}
             />
           ) : selectedHallazgo ? (
             <FindingDetail
               hallazgo={selectedHallazgo}
               caso={caso}
+              support={supportById.get(selectedHallazgo.id) ?? calculateFindingSupport(caso, selectedHallazgo)}
               canEdit={canEditAuditWork}
               onEdit={() => startEdit(selectedHallazgo)}
               onDiscard={() => { if (canEditAuditWork) { discardHallazgo(selectedHallazgo.id); setSelectedId(null); } }}
@@ -318,12 +350,14 @@ export default function HallazgosPage() {
 function FindingDetail({
   hallazgo,
   caso,
+  support,
   canEdit,
   onEdit,
   onDiscard,
 }: {
   hallazgo: Hallazgo;
-  caso: { id: string; evidencias: Array<{ id: string; titulo: string }>; respuestasAuditado: Array<{ hallazgoId: string; argumento: string; postura: string; fecha: string }> };
+  caso: Caso;
+  support: ReturnType<typeof calculateFindingSupport>;
   canEdit: boolean;
   onEdit: () => void;
   onDiscard: () => void;
@@ -364,6 +398,26 @@ function FindingDetail({
       </div>
 
       <div className="space-y-4">
+        <div className="border border-rule bg-[#0B0F15]/70 p-3">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
+              Sustentacion del hallazgo
+            </div>
+            <SupportBadge score={support.score} status={support.status} />
+          </div>
+          {support.missingItems.length > 0 ? (
+            <div className="space-y-1">
+              {support.missingItems.slice(0, 4).map(item => (
+                <div key={item.id} className="border-l border-rule pl-2 text-xs text-ink-muted">
+                  <span className="text-ink-soft">{item.label}:</span> {item.action}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-olive">La ficha no tiene faltantes materiales para defensa documental.</p>
+          )}
+        </div>
+
         {[
           { label: 'Condición', text: hallazgo.condicion },
           { label: 'Criterio', text: hallazgo.criterio },
@@ -418,6 +472,12 @@ function FindingDetail({
 
       <div className="mt-5 flex flex-wrap gap-2 border-t border-rule pt-4">
         <Link
+          href={`/casos/${caso.id}/hallazgos/${hallazgo.id}/defensa`}
+          className="border border-signal/45 bg-signal/10 px-3 py-1.5 text-xs text-signal hover:border-signal hover:text-ink"
+        >
+          Vista defensa
+        </Link>
+        <Link
           href={`/casos/${caso.id}/hallazgos/${hallazgo.id}`}
           className="border border-rule px-3 py-1.5 text-xs text-ink-muted hover:border-signal hover:text-ink"
         >
@@ -440,12 +500,14 @@ function FindingForm({
   setDraft,
   onSave,
   onCancel,
+  caso,
   evidencias,
 }: {
   draft: FindingDraft;
   setDraft: Dispatch<SetStateAction<FindingDraft | null>>;
   onSave: () => void;
   onCancel: () => void;
+  caso: Caso;
   evidencias: Array<{ id: string; titulo: string; tipo: string }>;
 }) {
   const riskScore = calculateRiskScore(draft.probabilidad, draft.impacto);
@@ -464,6 +526,53 @@ function FindingForm({
       return { ...prev, [key]: Array.from(set) };
     });
   };
+  const runAssistant = () => {
+    if (!draft.descripcionInicial.trim()) return;
+    const assistedDraft = generateAssistedFindingDraft(draft.descripcionInicial, caso);
+    setDraft(prev => prev ? { ...prev, assistedDraft, acceptedSuggestions: [], discardedSuggestions: [] } : prev);
+  };
+  const suggestionKey = (suggestionItem: AssistedFindingSuggestion) => `${suggestionItem.field}-${JSON.stringify(suggestionItem.value)}`;
+  const acceptSuggestion = (suggestionItem: AssistedFindingSuggestion) => {
+    const key = suggestionKey(suggestionItem);
+    setDraft(prev => {
+      if (!prev) return prev;
+      const next: FindingDraft = {
+        ...prev,
+        acceptedSuggestions: Array.from(new Set([...prev.acceptedSuggestions, key])),
+        discardedSuggestions: prev.discardedSuggestions.filter(item => item !== key),
+      };
+
+      if (suggestionItem.field === 'criterios' && Array.isArray(suggestionItem.value)) {
+        next.criterios = Array.from(new Set([...next.criterios, ...suggestionItem.value]));
+      } else if (suggestionItem.field === 'evidencias' && Array.isArray(suggestionItem.value)) {
+        next.evidencias = Array.from(new Set([...next.evidencias, ...suggestionItem.value]));
+      } else if (suggestionItem.field === 'probabilidad' || suggestionItem.field === 'impacto') {
+        next[suggestionItem.field] = Number(suggestionItem.value);
+      } else if (suggestionItem.field !== 'criterios' && suggestionItem.field !== 'evidencias') {
+        next[suggestionItem.field] = String(suggestionItem.value);
+      }
+
+      return next;
+    });
+  };
+  const discardSuggestion = (suggestionItem: AssistedFindingSuggestion) => {
+    const key = suggestionKey(suggestionItem);
+    setDraft(prev => prev ? {
+      ...prev,
+      discardedSuggestions: Array.from(new Set([...prev.discardedSuggestions, key])),
+      acceptedSuggestions: prev.acceptedSuggestions.filter(item => item !== key),
+    } : prev);
+  };
+  const draftMissing = [
+    ['Titulo', draft.titulo],
+    ['Condicion', draft.condicion],
+    ['Criterio', draft.criterio || draft.criterios.join(', ')],
+    ['Causa', draft.causa],
+    ['Efecto', draft.efecto],
+    ['Conclusion', draft.conclusion],
+    ['Recomendacion', draft.recomendacion],
+    ['Evidencias', draft.evidencias.length > 0 ? 'ok' : ''],
+  ].filter(([, value]) => !String(value).trim());
 
   return (
     <div className="audit-file-surface p-5">
@@ -500,6 +609,62 @@ function FindingForm({
         <Field label="Título">
           <input value={draft.titulo} onChange={e => update('titulo', e.target.value)} className="field-input" />
         </Field>
+
+        <div className="border border-rule bg-[#0B0F15]/70 p-3">
+          <div className="mb-2 text-[10px] uppercase tracking-widest text-signal" style={{ fontFamily: 'var(--font-mono)' }}>
+            Constructor asistido de hallazgos
+          </div>
+          <Field label="Describe lo observado">
+            <textarea
+              value={draft.descripcionInicial}
+              onChange={e => update('descripcionInicial', e.target.value)}
+              className="field-input min-h-24 resize-y"
+              placeholder="Describe en lenguaje natural lo revisado, la condicion observada y la evidencia disponible."
+            />
+          </Field>
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+            <p className="max-w-xl text-xs leading-relaxed text-ink-muted">
+              Usa reglas locales y plantillas. No usa IA generativa, no consulta APIs y no guarda sugerencias sin aprobacion del auditor.
+            </p>
+            <button
+              type="button"
+              onClick={runAssistant}
+              disabled={!draft.descripcionInicial.trim()}
+              className="border border-signal/45 bg-signal/10 px-3 py-2 text-xs font-semibold text-signal hover:border-signal disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              Generar borrador
+            </button>
+          </div>
+          {draft.assistedDraft && (
+            <div className="mt-4 space-y-2 border-t border-rule pt-3">
+              <p className="text-xs leading-relaxed text-ink-muted">{draft.assistedDraft.disclaimer}</p>
+              {draft.assistedDraft.suggestions.map(suggestionItem => {
+                const key = suggestionKey(suggestionItem);
+                const accepted = draft.acceptedSuggestions.includes(key);
+                const discarded = draft.discardedSuggestions.includes(key);
+                return (
+                  <div key={key} className={`border p-3 ${accepted ? 'border-olive/45 bg-olive/5' : discarded ? 'border-rule opacity-55' : 'border-rule bg-[#101721]'}`}>
+                    <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+                      <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
+                        {suggestionItem.label} / {suggestionItem.confidence}%
+                      </div>
+                      <div className="flex gap-2">
+                        <button type="button" onClick={() => acceptSuggestion(suggestionItem)} className="border border-olive/45 px-2 py-1 text-[10px] text-olive hover:border-olive">
+                          Aceptar
+                        </button>
+                        <button type="button" onClick={() => discardSuggestion(suggestionItem)} className="border border-rule px-2 py-1 text-[10px] text-ink-muted hover:text-ink">
+                          Descartar
+                        </button>
+                      </div>
+                    </div>
+                    <SuggestionValue value={suggestionItem.value} />
+                    <p className="mt-1 text-[11px] leading-relaxed text-ink-muted">{suggestionItem.reason}</p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         <div className="grid grid-cols-3 gap-3">
           <Field label="Proceso COBIT">
@@ -553,6 +718,21 @@ function FindingForm({
           </Field>
         ))}
 
+        {draftMissing.length > 0 && (
+          <div className="border border-amber-signal/35 bg-amber-signal/5 p-3">
+            <div className="mb-2 text-[10px] uppercase tracking-widest text-amber-signal" style={{ fontFamily: 'var(--font-mono)' }}>
+              Pendiente para sustentacion
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {draftMissing.map(([label]) => (
+                <span key={label} className="border border-rule px-2 py-1 text-[10px] text-ink-muted">
+                  {label}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         <Checklist title="Evidencias vinculadas">
           {evidencias.map(e => (
             <label key={e.id} className="check-row">
@@ -600,6 +780,33 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       {children}
     </label>
   );
+}
+
+function SupportBadge({ score, status }: { score: number; status: FindingSupportStatus }) {
+  return (
+    <span
+      className={`inline-flex whitespace-nowrap border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] ${supportClasses[status]}`}
+      style={{ fontFamily: 'var(--font-mono)' }}
+      title={`Sustentacion ${score}% - ${supportStatusLabel(status)}`}
+    >
+      {score}% {supportStatusLabel(status)}
+    </span>
+  );
+}
+
+function SuggestionValue({ value }: { value: string | number | string[] }) {
+  if (Array.isArray(value)) {
+    return (
+      <div className="flex flex-wrap gap-1.5">
+        {value.map(item => (
+          <span key={item} className="border border-rule px-2 py-0.5 font-mono text-[10px] text-signal" style={{ fontFamily: 'var(--font-mono)' }}>
+            {item}
+          </span>
+        ))}
+      </div>
+    );
+  }
+  return <p className="text-xs leading-relaxed text-ink-soft">{String(value)}</p>;
 }
 
 function Checklist({ title, children }: { title: string; children: React.ReactNode }) {

@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useCaseData } from '@/components/data/CaseDataProvider';
 import Timeline from '@/components/visual/Timeline';
 import type { TipoEvento } from '@/lib/types';
+import { buildRelationReasoningLog, type RelationReasoningLogItem } from '@/lib/audit-analysis';
 
 const eventTypes: TipoEvento[] = [
   'solicitud-info',
@@ -57,6 +59,7 @@ export default function TimelineClient() {
 
   const eventosOrdenados = [...caso.timeline].sort((a, b) => a.fecha.localeCompare(b.fecha));
   const ultimoEvento = eventosOrdenados.at(-1);
+  const reasoningLog = useMemo(() => buildRelationReasoningLog(caso), [caso]);
 
   const save = () => {
     if (!titulo.trim()) return;
@@ -98,6 +101,7 @@ export default function TimelineClient() {
           <div className="flex flex-wrap items-stretch gap-3">
             <HeaderFact label="Último registro" value={ultimoEvento ? formatTimelineStamp(ultimoEvento.fecha) : 'Sin eventos'} />
             <HeaderFact label="Entrevistas" value={String(caso.timeline.filter(e => e.tipo === 'entrevista').length)} />
+            <HeaderFact label="Decisiones" value={String(reasoningLog.length)} />
             <button type="button" onClick={() => setOpen(v => !v)} className="border border-signal/45 bg-signal/10 px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-signal">
               {open ? 'Cerrar captura' : 'Nuevo evento'}
             </button>
@@ -129,7 +133,10 @@ export default function TimelineClient() {
         </div>
       )}
 
-      <Timeline eventos={eventosOrdenados} />
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <Timeline eventos={eventosOrdenados} />
+        <ReasoningLogPanel entries={reasoningLog} caseId={caso.id} />
+      </div>
     </div>
   );
 }
@@ -142,5 +149,90 @@ function HeaderFact({ label, value }: { label: string; value: string }) {
       </div>
       <div className="mt-1 text-sm font-semibold text-ink">{value}</div>
     </div>
+  );
+}
+
+function ReasoningLogPanel({ entries, caseId }: { entries: RelationReasoningLogItem[]; caseId: string }) {
+  return (
+    <section className="audit-file-surface overflow-hidden">
+      <div className="border-b border-rule px-5 py-4">
+        <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-signal" style={{ fontFamily: 'var(--font-mono)' }}>
+          Bitacora de razonamiento
+        </div>
+        <h2 className="mt-1 font-display text-lg font-semibold text-ink" style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}>
+          Decisiones del tablero
+        </h2>
+        <p className="mt-2 text-xs leading-relaxed text-ink-muted">
+          Justificaciones registradas en conexiones visuales. Sirven como provenance de decision, no como validacion automatica del hallazgo.
+        </p>
+      </div>
+
+      {entries.length === 0 ? (
+        <div className="m-5 border border-rule bg-[#0B0F15]/70 p-4 text-sm text-ink-muted">
+          No hay decisiones de relacion registradas. Abre el tablero, selecciona una conexion y guarda una justificacion para alimentar esta bitacora.
+        </div>
+      ) : (
+        <div className="max-h-[620px] divide-y divide-rule/60 overflow-auto">
+          {entries.slice(0, 12).map(entry => (
+            <article key={entry.id} className="px-5 py-4">
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <StatusTag label={entry.accion} tone={entry.accion === 'validada' ? 'ok' : entry.accion === 'requiere-revision' ? 'warning' : 'neutral'} />
+                {entry.estado && <StatusTag label={entry.estado} tone={entry.estado === 'validada' ? 'ok' : entry.estado === 'requiere-revision' ? 'warning' : 'neutral'} />}
+                <span className="font-mono text-[10px] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
+                  {formatTimelineStamp(entry.fecha)}
+                </span>
+              </div>
+              <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-signal" style={{ fontFamily: 'var(--font-mono)' }}>
+                {entry.connection.id} / {entry.relationLabel}
+              </div>
+              <p className="mt-2 text-sm leading-relaxed text-ink-soft">{entry.detalle}</p>
+              <div className="mt-3 grid gap-2 text-[11px] text-ink-muted">
+                <RelationEndpoint label="Origen" value={entry.sourceLabel} />
+                <RelationEndpoint label="Destino" value={entry.targetLabel} />
+              </div>
+              {entry.usuarioRol && (
+                <div className="mt-2 font-mono text-[9px] uppercase tracking-[0.12em] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
+                  Rol: {entry.usuarioRol}
+                </div>
+              )}
+            </article>
+          ))}
+          {entries.length > 12 && (
+            <div className="px-5 py-3 text-xs text-ink-muted">
+              Se muestran 12 de {entries.length} decisiones registradas.
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="border-t border-rule px-5 py-4">
+        <Link href={`/casos/${caseId}/tablero`} className="inline-flex border border-signal/40 px-3 py-1.5 text-xs text-signal transition-colors hover:border-ink hover:text-ink">
+          Abrir tablero de relaciones
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+function RelationEndpoint({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border-l border-rule pl-3">
+      <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>{label}</span>
+      <span className="ml-2 text-ink-soft">{value}</span>
+    </div>
+  );
+}
+
+function StatusTag({ label, tone }: { label: string; tone: 'ok' | 'warning' | 'neutral' }) {
+  const className = tone === 'ok'
+    ? 'border-olive/50 bg-olive/10 text-olive'
+    : tone === 'warning'
+      ? 'border-amber-signal/50 bg-amber-signal/10 text-amber-signal'
+      : 'border-rule bg-[#0B0F15] text-ink-muted';
+
+  return (
+    <span className={`inline-flex whitespace-nowrap border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] ${className}`} style={{ fontFamily: 'var(--font-mono)' }}>
+      {label}
+    </span>
   );
 }

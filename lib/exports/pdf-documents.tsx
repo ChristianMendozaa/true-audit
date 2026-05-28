@@ -1,6 +1,6 @@
 import { Document, Font, Page, StyleSheet, Text, View, renderToBuffer } from '@react-pdf/renderer';
 import type { Caso, Hallazgo } from '@/lib/types';
-import { finalConclusion, findingCriteriaText, findingEvidenceText, findingResponseText } from './report-data';
+import { assuranceSummaryText, finalConclusion, findingCriteriaText, findingEvidenceText, findingResponseText, findingSupportText, relationReasoningText } from './report-data';
 
 const spanishMonths = [
   'enero',
@@ -287,11 +287,15 @@ function InformeFinalPdf({ caso }: { caso: Caso }) {
         <Text style={styles.paragraph}>
           Se registraron {caso.evidencias.length} evidencias, {caso.hallazgos.length} hallazgos y {caso.respuestasAuditado.length} respuestas del auditado. La evaluación se sustenta en COBIT, COSO y RGSI.
         </Text>
+        <Text style={styles.paragraph}>{assuranceSummaryText(caso)}</Text>
 
         <Text style={styles.sectionTitle}>IV. Hallazgos de Auditoría</Text>
         {caso.hallazgos.map((hallazgo, index) => (
           <FindingSummary key={hallazgo.id} hallazgo={hallazgo} index={index + 1} caso={caso} />
         ))}
+
+        <Text style={styles.sectionTitle}>V. Bitacora de Razonamiento</Text>
+        <Text style={styles.paragraph}>{relationReasoningText(caso)}</Text>
 
         <Text style={styles.sectionTitle}>VI. Conclusiones</Text>
         <Text style={styles.paragraph}>{finalConclusion(caso)}</Text>
@@ -329,6 +333,7 @@ function FindingSummary({ hallazgo, index, caso }: { hallazgo: Hallazgo; index: 
       <FindingField label="Recomendación" value={hallazgo.recomendacion} />
       <FindingField label="Evidencia documental" value={findingEvidenceText(caso, hallazgo)} />
       <FindingField label="Respuesta del auditado" value={findingResponseText(caso, hallazgo)} />
+      <FindingField label="Sustentacion True Audit" value={findingSupportText(caso, hallazgo)} />
     </View>
   );
 }
@@ -369,6 +374,7 @@ function FichasHallazgoPdf({ caso }: { caso: Caso }) {
             <CardRow label="Causa" value={hallazgo.causa} />
             <CardRow label="Pruebas / Evidencia" value={findingEvidenceText(caso, hallazgo)} />
             <CardRow label="Respuesta auditado" value={findingResponseText(caso, hallazgo)} />
+            <CardRow label="Sustentacion" value={findingSupportText(caso, hallazgo)} />
             <View style={[styles.row, styles.lastRow]}>
               <Text style={styles.cardLabel}>Nivel del Riesgo</Text>
               <Text style={styles.cardValue}>{hallazgo.nivelRiesgo.toUpperCase()} - Probabilidad {hallazgo.probabilidad}; Impacto {hallazgo.impacto}; Riesgo {riskScore(hallazgo)}</Text>
