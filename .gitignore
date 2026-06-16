@@ -42,3 +42,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Claude Code / herramientas locales
+/.claude/
+
+# Material de contexto y curso: no versionar binarios pesados de docs/.
+# Solo se mantienen los docs necesarios (negados abajo).
+/docs/*
+!/docs/firebase.md
+!/docs/matriz cobit.xlsx
+!/docs/Informe_Final_Auditoria_RGSI_COBIT_Banco_Debilidad_HISTORIAL (1).docx
+!/docs/U2 Hallazgos y Controles Cobit  (Encontrados) (3).docx

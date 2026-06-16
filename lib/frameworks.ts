@@ -1,4 +1,4 @@
-import type { Criterio } from './types';
+import type { Criterio, Marco } from './types';
 
 export const criteriosCobit: Criterio[] = [
   {
@@ -156,4 +156,70 @@ export function getCriterioById(id: string): Criterio | undefined {
 
 export function getCriteriosByMarco(marco: string): Criterio[] {
   return todosLosCriterios.filter(c => c.marco === marco);
+}
+
+// ─── Metadatos de marco (fuente única) ───────────────────────────────
+// El alcance del expediente usa COBIT 4.1 (procesos PO/ME), COSO 2013
+// (cinco componentes) y RGSI (secciones aplicables). Las pantallas NO deben
+// declarar dominios a mano: se derivan del catálogo real con getDominiosByMarco.
+
+export interface MarcoMeta {
+  id: Marco;
+  slug: string;
+  sigla: Marco;
+  version: string;
+  descripcion: string;
+  accent: string;
+}
+
+export const marcosMeta: MarcoMeta[] = [
+  {
+    id: 'COBIT',
+    slug: 'cobit',
+    sigla: 'COBIT',
+    version: 'COBIT 4.1',
+    descripcion:
+      'Marco de control y gobierno de TI. Aporta el criterio de proceso (dominios Planificar y Organizar y Monitorear y Evaluar) para sustentar hallazgos de control interno informático.',
+    accent: '#6FA8D8',
+  },
+  {
+    id: 'COSO',
+    slug: 'coso',
+    sigla: 'COSO',
+    version: 'COSO 2013',
+    descripcion:
+      'Modelo de control interno. Aporta el criterio por componentes: ambiente de control, evaluación de riesgos, actividades de control, información y comunicación, y supervisión.',
+    accent: '#9E80D8',
+  },
+  {
+    id: 'RGSI',
+    slug: 'rgsi',
+    sigla: 'RGSI',
+    version: 'RGSI',
+    descripcion:
+      'Reglamento para la gestión de seguridad de la información en entidades financieras. Aporta el criterio normativo por secciones aplicables a los sistemas de información.',
+    accent: '#D8A437',
+  },
+];
+
+export function getMarcoMeta(slugOrId: string): MarcoMeta | undefined {
+  const key = slugOrId.toLowerCase();
+  return marcosMeta.find(m => m.slug === key || m.id.toLowerCase() === key);
+}
+
+export interface DominioResumen {
+  dominio: string;
+  criterios: Criterio[];
+}
+
+/** Dominios reales presentes en el catálogo de un marco, en orden de aparición. */
+export function getDominiosByMarco(marco: Marco): DominioResumen[] {
+  const out: DominioResumen[] = [];
+  for (const criterio of getCriteriosByMarco(marco)) {
+    const dominio = criterio.dominio?.trim() || 'Sin dominio';
+    const existente = out.find(d => d.dominio === dominio);
+    if (existente) existente.criterios.push(criterio);
+    else out.push({ dominio, criterios: [criterio] });
+  }
+  return out;
 }
