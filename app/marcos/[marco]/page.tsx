@@ -52,7 +52,7 @@ export default async function MarcoPage({ params }: MarcoPageProps) {
                 {meta.id}
               </div>
               <div
-                className="mt-3 font-mono text-xs uppercase tracking-[0.14em] text-ink-muted"
+                className="mt-3 label-eyebrow"
                 style={{ fontFamily: 'var(--font-mono)' }}
               >
                 {meta.version} / Índice normativo del alcance
@@ -75,7 +75,7 @@ export default async function MarcoPage({ params }: MarcoPageProps) {
                 <h2 className="text-sm font-semibold uppercase tracking-[0.08em] text-ink">{dominio}</h2>
                 <span className="h-px flex-1 bg-rule" />
                 <span
-                  className="font-mono text-[10px] text-ink-muted"
+                  className="label-eyebrow"
                   style={{ fontFamily: 'var(--font-mono)' }}
                 >
                   {criterios.length} {criterios.length === 1 ? 'criterio' : 'criterios'}
@@ -91,12 +91,12 @@ export default async function MarcoPage({ params }: MarcoPageProps) {
                         <CriterioBadge codigo={criterio.codigo} marco={criterio.marco} className="mt-0.5 w-fit shrink-0" />
                         <div className="min-w-0 flex-1">
                           <h3 className="text-sm font-semibold leading-snug text-ink">{criterio.nombre}</h3>
-                          <p className="mt-1 text-xs leading-relaxed text-ink-muted">{criterio.descripcion}</p>
+                          <p className="mt-1 text-xs leading-relaxed text-ink-soft">{criterio.descripcion}</p>
 
                           {hallazgosVinculados.length > 0 && (
                             <div className="mt-4 border-t border-rule pt-3">
                               <div
-                                className="mb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-muted"
+                                className="mb-2 label-eyebrow"
                                 style={{ fontFamily: 'var(--font-mono)' }}
                               >
                                 Hallazgos que aplican este criterio
@@ -109,7 +109,7 @@ export default async function MarcoPage({ params }: MarcoPageProps) {
                                     className="group flex items-center gap-3 px-2 py-1.5 text-xs transition-colors hover:bg-paper-warm"
                                   >
                                     <span
-                                      className="w-12 shrink-0 font-mono text-[10px] text-signal"
+                                      className="w-12 shrink-0 font-mono text-xs text-signal"
                                       style={{ fontFamily: 'var(--font-mono)' }}
                                     >
                                       {h.numero}
@@ -145,10 +145,7 @@ function Stat({ value, label, accent }: { value: number; label: string; accent: 
       >
         {value}
       </div>
-      <div
-        className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.08em] text-ink-muted"
-        style={{ fontFamily: 'var(--font-mono)' }}
-      >
+      <div className="mt-0.5 data-label" style={{ fontFamily: 'var(--font-mono)' }}>
         {label}
       </div>
     </div>

@@ -45,6 +45,20 @@
   --font-sans: var(--font-geist), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, 'Courier New', monospace;
 
+  /* Superficies semánticas (reemplaza bg-[#101721] hardcodeado) */
+  --color-surface: #101721;
+  --color-surface-2: #0B0F15;
+
+  /* Borde visible para tarjetas y separadores principales
+     (--color-rule queda para divisores internos sutiles) */
+  --color-rule-strong: #3A4455;
+
+  /* Colores de marco accesibles como texto sobre oscuro
+     (≥ 4.5:1 sobre --color-paper y --color-surface) */
+  --color-marco-cobit: #6FA8D8;
+  --color-marco-coso:  #9E80D8;
+  --color-marco-rgsi:  #D8A437;
+
   /* Radios */
   --radius-sm: 2px;
   --radius-md: 4px;
@@ -108,8 +122,8 @@ body {
 }
 
 .audit-file-surface {
-  background: #101721;
-  border: 1px solid rgba(48, 56, 71, 0.7);
+  background: var(--color-surface);
+  border: 1px solid var(--color-rule-strong);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
@@ -126,6 +140,40 @@ body {
   width: 3px;
   background: var(--color-signal);
   opacity: 0.9;
+}
+
+/* ─── Clases de utilidad tipográfica ─── */
+
+/* Eyebrow / header de sección.
+   Piso de 11px; tracking reducido para mejorar legibilidad.
+   Reemplaza el patrón font-mono text-[10px] uppercase tracking-[0.16em] disperso. */
+.label-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;    /* 11px */
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-ink-muted);
+}
+
+/* Label de campo de formulario — mismo ritmo que eyebrow */
+.label-field {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-ink-muted);
+}
+
+/* Label de métrica / KPI / stat */
+.data-label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-muted);
 }
 
 .field-input {

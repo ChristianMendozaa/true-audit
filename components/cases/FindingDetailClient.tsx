@@ -84,8 +84,9 @@ export default function FindingDetailClient({ caseId, findingId }: { caseId: str
   return (
     <div className="max-w-6xl p-8">
       <div className="mb-8 flex items-center gap-2 text-xs text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
-        <Link href={`/casos/${caseId}/hallazgos`} className="hover:text-ink transition-colors">
-          &lt;- Hallazgos
+        <Link href={`/casos/${caseId}/hallazgos`} className="hover:text-ink transition-colors flex items-center gap-1">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M7.5 2L3.5 6L7.5 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+          Hallazgos
         </Link>
         <span>/</span>
         <span>{hallazgo.numero}</span>
@@ -105,7 +106,7 @@ export default function FindingDetailClient({ caseId, findingId }: { caseId: str
             Emitido {hallazgo.fechaEmision}
           </div>
         </div>
-        <h1 className="font-display font-bold text-ink" style={{ fontFamily: 'var(--font-display)', fontSize: '1.8rem', letterSpacing: '0em' }}>
+        <h1 className="font-display text-3xl font-bold leading-tight text-ink" style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}>
           {hallazgo.titulo}
         </h1>
       </div>
@@ -120,8 +121,8 @@ export default function FindingDetailClient({ caseId, findingId }: { caseId: str
       {support && (
         <div className="audit-file-surface mb-8 p-5">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-            <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
-              Semaforo de sustentacion
+            <div className="label-eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>
+              Semáforo de sustentación
             </div>
             <Link
               href={`/casos/${caseId}/hallazgos/${hallazgo.id}/defensa`}
@@ -166,13 +167,13 @@ export default function FindingDetailClient({ caseId, findingId }: { caseId: str
           {respuestas.length > 0 ? respuestas.map(r => (
             <div key={r.id} className="audit-file-surface p-5">
               <div className="mb-2 flex flex-wrap items-center gap-2">
-                <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-signal" style={{ fontFamily: 'var(--font-mono)' }}>
+                <span className="label-eyebrow text-signal" style={{ fontFamily: 'var(--font-mono)' }}>
                   {r.id} / {r.fecha}
                 </span>
-                <span className="border border-rule px-2 py-0.5 text-[10px] uppercase text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
+                <span className="border border-rule px-2 py-0.5 label-eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>
                   {r.postura}
                 </span>
-                <span className="border border-rule px-2 py-0.5 text-[10px] uppercase text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
+                <span className="border border-rule px-2 py-0.5 label-eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>
                   Auditor: {r.decisionAuditor}
                 </span>
               </div>
@@ -252,11 +253,11 @@ export default function FindingDetailClient({ caseId, findingId }: { caseId: str
       </div>
 
       <div className="flex items-center justify-between border-t border-rule pt-6">
-        {prevId ? <NavLink href={`/casos/${caseId}/hallazgos/${prevId}`} label="<- Hallazgo anterior" /> : <div />}
+        {prevId ? <NavLink href={`/casos/${caseId}/hallazgos/${prevId}`} label="Hallazgo anterior" dir="prev" /> : <div />}
         <Link href={`/casos/${caseId}/hallazgos`} className="text-xs text-ink-muted hover:text-ink transition-colors font-mono" style={{ fontFamily: 'var(--font-mono)' }}>
           Ver todos los hallazgos
         </Link>
-        {nextId ? <NavLink href={`/casos/${caseId}/hallazgos/${nextId}`} label="Hallazgo siguiente ->" /> : <div />}
+        {nextId ? <NavLink href={`/casos/${caseId}/hallazgos/${nextId}`} label="Hallazgo siguiente" dir="next" /> : <div />}
       </div>
     </div>
   );
@@ -265,7 +266,7 @@ export default function FindingDetailClient({ caseId, findingId }: { caseId: str
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="audit-file-surface p-4">
-      <div className="mb-1 text-[10px] uppercase tracking-widest text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>{label}</div>
+      <div className="mb-1 label-field" style={{ fontFamily: 'var(--font-mono)' }}>{label}</div>
       <div className="font-mono text-sm text-ink" style={{ fontFamily: 'var(--font-mono)' }}>{value}</div>
     </div>
   );
@@ -274,7 +275,7 @@ function Metric({ label, value }: { label: string; value: string }) {
 function SupportBadge({ score, status }: { score: number; status: FindingSupportStatus }) {
   return (
     <span
-      className={`border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] ${supportClasses[status]}`}
+      className={`border px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.08em] ${supportClasses[status]}`}
       style={{ fontFamily: 'var(--font-mono)' }}
     >
       {score}% {supportStatusLabel(status)}
@@ -285,7 +286,7 @@ function SupportBadge({ score, status }: { score: number; status: FindingSupport
 function TextBlock({ title, text }: { title: string; text: string }) {
   return (
     <div className="audit-file-surface p-5">
-      <div className="mb-2 text-[10px] uppercase tracking-widest text-signal" style={{ fontFamily: 'var(--font-mono)' }}>{title}</div>
+      <div className="mb-2 label-eyebrow text-signal" style={{ fontFamily: 'var(--font-mono)' }}>{title}</div>
       <p className="text-sm leading-relaxed text-ink-soft">{text}</p>
     </div>
   );
@@ -294,16 +295,26 @@ function TextBlock({ title, text }: { title: string; text: string }) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <div className="mb-1 text-[10px] uppercase tracking-widest text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>{label}</div>
+      <div className="mb-1 label-field" style={{ fontFamily: 'var(--font-mono)' }}>{label}</div>
       {children}
     </label>
   );
 }
 
-function NavLink({ href, label }: { href: string; label: string }) {
+function NavLink({ href, label, dir }: { href: string; label: string; dir: 'prev' | 'next' }) {
   return (
-    <Link href={href} className="flex items-center gap-2 text-sm text-ink-muted hover:text-ink transition-colors">
+    <Link href={href} className="flex items-center gap-1.5 text-sm text-ink-muted hover:text-ink transition-colors">
+      {dir === 'prev' && (
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M9 2L5 7L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      )}
       {label}
+      {dir === 'next' && (
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M5 2L9 7L5 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      )}
     </Link>
   );
 }

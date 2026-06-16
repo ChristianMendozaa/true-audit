@@ -44,11 +44,16 @@ Definida en `globals.css` como CSS custom properties:
 
 ### Colores por marco normativo
 
-| Marco | Color |
-|---|---|
-| COBIT | `#6FA8D8` |
-| COSO | `#9E80D8` |
-| RGSI | `#D8A437` |
+Usar siempre los tokens `--color-marco-*` (≥ 4.5:1 sobre `--color-paper`):
+
+| Marco | Token | Hex |
+|---|---|---|
+| COBIT | `text-marco-cobit` | `#6FA8D8` |
+| COSO | `text-marco-coso` | `#9E80D8` |
+| RGSI | `text-marco-rgsi` / `text-signal` | `#D8A437` |
+
+**No usar** `text-node-doc` / `text-node-interview` como color de texto de marco (fallan WCAG AA).
+Esos tokens son para nodos del tablero SVG (contraste relativo al fondo del nodo, no del fondo global).
 
 ---
 
@@ -60,12 +65,30 @@ Definida en `globals.css` como CSS custom properties:
 | `--font-mono` | JetBrains Mono | Códigos, fechas, etiquetas uppercase, badges |
 | `--font-sans` | Geist | Cuerpo de texto, descripciones, formularios |
 
-### Reglas
+### Escala canónica
+
+| Rol | Clase Tailwind / CSS | Notas |
+|---|---|---|
+| Título de página (h1) | `font-display text-3xl font-bold leading-tight` | Uniforme en todas las pantallas |
+| Título de sección (h2) | `font-display text-lg font-semibold` | — |
+| Cuerpo / descripción | `text-sm leading-relaxed text-ink-soft` | No usar `text-ink-muted` para prosa |
+| Dato / código mono | `font-mono text-xs` (12 px mín.) | Para códigos de hallazgo/evidencia en tablas |
+| Eyebrow / header de sección | `.label-eyebrow` (11 px, tracking 0.08em) | Reemplaza la cadena `text-[10px] uppercase tracking-[0.16em]` |
+| Label de campo de formulario | `.label-field` (11 px, tracking 0.08em) | Idéntico a eyebrow, semántica diferente |
+| Label de métrica / stat / KPI | `.data-label` (11 px, tracking 0.06em) | — |
+
+### Regla de piso tipográfico
+
+> **Ningún contenido informativo debe renderizarse por debajo de 11 px.**
+> `MarginNumber` (`aria-hidden`, ornamental) puede quedar en 10 px, pero su uso debe ser escaso.
+> Los nodos del tablero SVG pueden usar tamaños más pequeños por limitaciones del canvas; compensar con zoom.
+
+### Reglas adicionales
 
 - Códigos (H-001, EVD-005, COBIT PO1) siempre en `font-mono`
 - Títulos de sección en `font-display` con `letter-spacing: 0em`
-- Labels de metadatos: `font-mono`, `text-[10px]`, `uppercase`, `tracking-[0.16em]`
-- Cuerpo de texto: `text-sm`, `leading-relaxed`, `text-ink-soft`
+- Labels de metadatos: usar `.label-eyebrow` — **no** derivar manualmente `font-mono text-[10px] uppercase tracking-[0.16em]`
+- Cuerpo de texto: `text-sm`, `leading-relaxed`, `text-ink-soft` (no `text-ink-muted`)
 
 ---
 

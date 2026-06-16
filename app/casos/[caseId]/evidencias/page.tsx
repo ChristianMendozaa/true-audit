@@ -140,10 +140,10 @@ export default function EvidenciasPage() {
       {/* Header */}
       <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-bold text-ink" style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}>
+          <h1 className="font-display text-3xl font-bold text-ink" style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}>
             Archivo documental
           </h1>
-          <p className="mt-1 text-sm text-ink-muted">
+          <p className="mt-1 text-sm text-ink-soft">
             {evidenciasActivas.length} evidencias activas · {caso.evidencias.filter(e => e.descartada).length} descartadas
           </p>
         </div>
@@ -188,8 +188,8 @@ export default function EvidenciasPage() {
         {/* Left: table */}
         <div className="min-h-0 overflow-auto border border-rule">
           <table className="w-full border-collapse text-left text-sm">
-            <thead className="sticky top-0 bg-[#0B0F15] text-[10px] uppercase tracking-[0.12em] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
-              <tr>
+            <thead className="sticky top-0 bg-[#0B0F15]" style={{ fontFamily: 'var(--font-mono)' }}>
+              <tr className="label-eyebrow text-ink-muted">
                 <th className="border-b border-rule px-3 py-2.5 font-medium">Código</th>
                 <th className="border-b border-rule px-3 py-2.5 font-medium">Evidencia</th>
                 <th className="border-b border-rule px-3 py-2.5 font-medium">Tipo</th>
@@ -204,11 +204,13 @@ export default function EvidenciasPage() {
                   <tr key={evd.id}
                     className={`cursor-pointer border-b border-rule/50 transition-colors last:border-b-0 ${isSelected ? 'bg-paper-warm' : 'hover:bg-paper-warm/50'}`}
                     onClick={() => { setSelectedId(selectedId === evd.id ? null : evd.id); setDraft(null); }}>
-                    <td className="whitespace-nowrap px-3 py-2.5 font-mono text-[10px] text-signal" style={{ fontFamily: 'var(--font-mono)' }}>{evd.id}</td>
-                    <td className="max-w-52 truncate px-3 py-2.5 text-ink">{evd.titulo}</td>
+                    <td className="whitespace-nowrap px-3 py-2.5 font-mono text-xs text-signal" style={{ fontFamily: 'var(--font-mono)' }}>{evd.id}</td>
+                    <td className="max-w-52 px-3 py-2.5 text-ink">
+                      <span className="line-clamp-2 leading-snug">{evd.titulo}</span>
+                    </td>
                     <td className="whitespace-nowrap px-3 py-2.5 text-xs text-ink-muted">{tipoLabels[evd.tipo]}</td>
                     <td className="px-3 py-2.5">
-                      <span className={`inline-flex border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] ${
+                      <span className={`inline-flex border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] ${
                         (evd.estadoRevision ?? 'pendiente') === 'revisado' ? 'border-olive/45 text-olive' :
                         (evd.estadoRevision ?? 'pendiente') === 'observado' ? 'border-amber-signal/45 text-amber-signal' :
                         'border-rule text-ink-muted'
@@ -216,7 +218,7 @@ export default function EvidenciasPage() {
                         {reviewStatusLabel(evd.estadoRevision ?? 'pendiente')}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-2.5 font-mono text-[10px] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>{evd.fecha}</td>
+                    <td className="whitespace-nowrap px-3 py-2.5 font-mono text-xs text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>{evd.fecha}</td>
                   </tr>
                 );
               })}
@@ -235,7 +237,7 @@ export default function EvidenciasPage() {
             <div className="audit-file-surface p-5">
               <div className="mb-4 flex items-start justify-between gap-3">
                 <div>
-                  <div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-node-doc" style={{ fontFamily: 'var(--font-mono)' }}>
+                  <div className="mb-1 label-eyebrow text-marco-cobit" style={{ fontFamily: 'var(--font-mono)' }}>
                     {selectedEvidencia.id} / {tipoLabels[selectedEvidencia.tipo]}
                   </div>
                   <h2 className="font-display text-lg font-bold text-ink" style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}>
@@ -334,7 +336,7 @@ function EvidenceForm({ draft, setDraft, onSave, onCancel, hallazgos }: {
 
   return (
     <div className="audit-file-surface p-5">
-      <div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-node-doc" style={{ fontFamily: 'var(--font-mono)' }}>
+      <div className="mb-1 label-eyebrow text-marco-cobit" style={{ fontFamily: 'var(--font-mono)' }}>
         {draft.id ? `Editar ${draft.id}` : 'Nueva evidencia'}
       </div>
       <h2 className="mb-4 font-display text-lg font-bold text-ink" style={{ fontFamily: 'var(--font-display)' }}>Ficha documental</h2>
@@ -404,14 +406,14 @@ function EvidenceForm({ draft, setDraft, onSave, onCancel, hallazgos }: {
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (<label className="block"><div className="mb-1 text-[10px] uppercase tracking-widest text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>{label}</div>{children}</label>);
+  return (<label className="block"><div className="mb-1 label-field" style={{ fontFamily: 'var(--font-mono)' }}>{label}</div>{children}</label>);
 }
 function Checklist({ title, children }: { title: string; children: React.ReactNode }) {
-  return (<div className="border border-rule bg-[#0B0F15]/70 p-3"><div className="mb-2 text-[10px] uppercase tracking-widest text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>{title}</div><div className="max-h-44 space-y-1 overflow-auto pr-1">{children}</div></div>);
+  return (<div className="border border-rule bg-surface-2/70 p-3"><div className="mb-2 label-eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>{title}</div><div className="max-h-44 space-y-1 overflow-auto pr-1">{children}</div></div>);
 }
 function PanelBlock({ title, children }: { title: string; children: React.ReactNode }) {
-  return (<div className="border-t border-rule pt-3"><div className="mb-2 text-[10px] uppercase tracking-widest text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>{title}</div>{children}</div>);
+  return (<div className="border-t border-rule pt-3"><div className="mb-2 label-eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>{title}</div>{children}</div>);
 }
 function PanelMetric({ label, value }: { label: string; value: string }) {
-  return (<div className="border border-rule bg-[#0B0F15]/70 p-3"><div className="mb-1 text-[10px] uppercase tracking-widest text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>{label}</div><div className="font-mono text-xs text-ink" style={{ fontFamily: 'var(--font-mono)' }}>{value}</div></div>);
+  return (<div className="border border-rule bg-surface-2/70 p-3"><div className="mb-1 label-field" style={{ fontFamily: 'var(--font-mono)' }}>{label}</div><div className="font-mono text-xs text-ink" style={{ fontFamily: 'var(--font-mono)' }}>{value}</div></div>);
 }

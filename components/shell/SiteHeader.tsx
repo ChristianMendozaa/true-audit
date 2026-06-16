@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import AuditMark from './AuditMark';
 import UserModeControl from '@/components/auth/UserModeControl';
 
@@ -26,8 +29,8 @@ export default function SiteHeader({ compact = false }: SiteHeaderProps) {
             </div>
             {!compact && (
               <div
-                className="mt-0.5 text-ink-muted uppercase"
-                style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.08em' }}
+                className="mt-0.5 label-eyebrow"
+                style={{ fontFamily: 'var(--font-mono)' }}
               >
                 TAAC / AUDITORIA INVESTIGATIVA
               </div>
@@ -46,10 +49,16 @@ export default function SiteHeader({ compact = false }: SiteHeaderProps) {
 }
 
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isActive = pathname.startsWith(href);
   return (
     <Link
       href={href}
-      className="border border-transparent px-3 py-1.5 text-sm text-ink-soft transition-colors hover:border-rule hover:bg-paper-warm hover:text-ink"
+      className={`border px-3 py-1.5 text-sm transition-colors hover:bg-paper-warm hover:text-ink
+        ${isActive
+          ? 'border-rule-strong bg-paper-warm text-ink'
+          : 'border-transparent text-ink-soft hover:border-rule'
+        }`}
       style={{ fontFamily: 'var(--font-sans)' }}
     >
       {children}

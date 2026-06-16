@@ -48,7 +48,7 @@ export default async function CaseDashboard({ params }: CaseDashboardProps) {
           <div className="min-w-0 flex-1">
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <span
-                className="border border-signal/40 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-signal"
+                className="border border-signal/40 px-2 py-1 label-eyebrow text-signal"
                 style={{ fontFamily: 'var(--font-mono)' }}
               >
                 Expediente {caso.numero}
@@ -76,7 +76,7 @@ export default async function CaseDashboard({ params }: CaseDashboardProps) {
         <div className="mt-6 grid gap-4 border-t border-rule pt-5 lg:grid-cols-[1.2fr_0.8fr]">
           <div>
             <div
-              className="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-muted"
+              className="mb-2 label-eyebrow"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
               Objetivo de auditoría
@@ -85,7 +85,7 @@ export default async function CaseDashboard({ params }: CaseDashboardProps) {
           </div>
           <div>
             <div
-              className="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-muted"
+              className="mb-2 label-eyebrow"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
               Grupo auditor
@@ -93,7 +93,7 @@ export default async function CaseDashboard({ params }: CaseDashboardProps) {
             <div className="space-y-1.5">
               {caso.auditores.map(a => (
                 <div key={a.id} className="flex items-center gap-2 text-sm">
-                  <span className="font-mono text-[9px] text-signal" style={{ fontFamily: 'var(--font-mono)' }}>{a.id}</span>
+                  <span className="font-mono text-xs text-signal" style={{ fontFamily: 'var(--font-mono)' }}>{a.id}</span>
                   <span className="text-ink">{a.nombre}</span>
                   <span className="text-xs text-ink-muted">· {a.rol}</span>
                 </div>
@@ -119,7 +119,7 @@ export default async function CaseDashboard({ params }: CaseDashboardProps) {
           {/* Hallazgos críticos pendientes */}
           <section className="audit-file-surface p-5">
             <div
-              className="mb-3 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-muted"
+              className="mb-3 label-eyebrow"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
               Hallazgos críticos pendientes ({sinRespuesta.filter(h => h.severidad === 'critico').length})
@@ -136,7 +136,7 @@ export default async function CaseDashboard({ params }: CaseDashboardProps) {
                     href={`/casos/${caso.id}/hallazgos/${h.id}`}
                     className="flex items-center gap-3 border-l-2 border-vermilion/60 pl-3 py-1.5 text-sm transition-colors hover:text-ink"
                   >
-                    <span className="font-mono text-[10px] text-signal" style={{ fontFamily: 'var(--font-mono)' }}>{h.numero}</span>
+                    <span className="font-mono text-xs text-signal" style={{ fontFamily: 'var(--font-mono)' }}>{h.numero}</span>
                     <span className="flex-1 truncate text-ink-muted">{h.titulo}</span>
                     <StatusPill status="pendiente" size="sm" />
                   </Link>
@@ -149,7 +149,7 @@ export default async function CaseDashboard({ params }: CaseDashboardProps) {
           {evidenciasHuerfanas.length > 0 && (
             <section className="audit-file-surface p-5">
               <div
-                className="mb-3 font-mono text-[10px] uppercase tracking-[0.16em] text-amber-signal"
+                className="mb-3 label-eyebrow text-amber-signal"
                 style={{ fontFamily: 'var(--font-mono)' }}
               >
                 Evidencias sin hallazgo asociado ({evidenciasHuerfanas.length})
@@ -157,7 +157,7 @@ export default async function CaseDashboard({ params }: CaseDashboardProps) {
               <div className="space-y-1">
                 {evidenciasHuerfanas.slice(0, 5).map(e => (
                   <div key={e.id} className="flex items-center gap-3 border-l border-rule pl-3 py-1 text-xs text-ink-muted">
-                    <span className="font-mono text-[10px]" style={{ fontFamily: 'var(--font-mono)' }}>{e.id}</span>
+                    <span className="font-mono text-xs" style={{ fontFamily: 'var(--font-mono)' }}>{e.id}</span>
                     <span className="flex-1 truncate">{e.titulo}</span>
                   </div>
                 ))}
@@ -174,7 +174,7 @@ export default async function CaseDashboard({ params }: CaseDashboardProps) {
           {sinRespuesta.filter(h => h.severidad !== 'critico').length > 0 && (
             <section className="audit-file-surface p-5">
               <div
-                className="mb-3 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-muted"
+                className="mb-3 label-eyebrow"
                 style={{ fontFamily: 'var(--font-mono)' }}
               >
                 Otros hallazgos sin respuesta ({sinRespuesta.filter(h => h.severidad !== 'critico').length})
@@ -186,7 +186,7 @@ export default async function CaseDashboard({ params }: CaseDashboardProps) {
                     href={`/casos/${caso.id}/hallazgos/${h.id}`}
                     className="flex items-center gap-3 border-l border-rule pl-3 py-1.5 text-sm transition-colors hover:border-signal hover:text-ink"
                   >
-                    <span className="font-mono text-[10px] text-signal" style={{ fontFamily: 'var(--font-mono)' }}>{h.numero}</span>
+                    <span className="font-mono text-xs text-signal" style={{ fontFamily: 'var(--font-mono)' }}>{h.numero}</span>
                     <span className="flex-1 truncate text-ink-muted">{h.titulo}</span>
                     <StatusPill status={h.severidad} size="sm" />
                   </Link>
@@ -201,7 +201,7 @@ export default async function CaseDashboard({ params }: CaseDashboardProps) {
           {/* Última actividad */}
           <section className="audit-file-surface p-5">
             <div
-              className="mb-3 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-muted"
+              className="mb-3 label-eyebrow"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
               Última actividad
@@ -214,7 +214,7 @@ export default async function CaseDashboard({ params }: CaseDashboardProps) {
               <div className="space-y-2">
                 {ultimosEventos.map(evt => (
                   <div key={evt.id} className="flex gap-3 border-l border-rule pl-3 py-1">
-                    <span className="shrink-0 font-mono text-[10px] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
+                    <span className="shrink-0 font-mono text-xs text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
                       {evt.fecha.slice(0, 10)}
                     </span>
                     <div className="min-w-0 flex-1">
@@ -232,7 +232,7 @@ export default async function CaseDashboard({ params }: CaseDashboardProps) {
           {/* Accesos rápidos */}
           <section className="audit-file-surface p-5">
             <div
-              className="mb-3 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-muted"
+              className="mb-3 label-eyebrow"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
               Accesos rápidos
@@ -251,7 +251,7 @@ export default async function CaseDashboard({ params }: CaseDashboardProps) {
                   className="flex items-center justify-between border border-rule px-3 py-2 text-sm text-ink-muted transition-colors hover:border-signal/50 hover:text-ink"
                 >
                   <span>{link.label}</span>
-                  <span className="font-mono text-[10px]" style={{ fontFamily: 'var(--font-mono)' }}>→</span>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </Link>
               ))}
             </div>
@@ -266,7 +266,7 @@ function DossierRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="mb-3 last:mb-0">
       <div
-        className="font-mono text-[9px] uppercase tracking-[0.14em] text-ink-muted"
+        className="label-eyebrow"
         style={{ fontFamily: 'var(--font-mono)' }}
       >
         {label}

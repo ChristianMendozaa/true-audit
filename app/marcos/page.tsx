@@ -28,7 +28,7 @@ export default function MarcosPage() {
       <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
         <header className="mb-10 max-w-2xl">
           <div
-            className="mb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-signal"
+            className="mb-2 label-eyebrow text-signal"
             style={{ fontFamily: 'var(--font-mono)' }}
           >
             Biblioteca normativa
@@ -39,7 +39,7 @@ export default function MarcosPage() {
           >
             Marcos de referencia
           </h1>
-          <p className="mt-3 text-sm leading-relaxed text-ink-muted">
+          <p className="mt-3 text-sm leading-relaxed text-ink-soft">
             Criterios COBIT 4.1, COSO 2013 y RGSI que sustentan los hallazgos del expediente. Cada dominio listado proviene del catálogo real del alcance, no de la estructura completa del estándar.
           </p>
         </header>
@@ -60,14 +60,14 @@ export default function MarcosPage() {
                   {meta.sigla}
                 </span>
                 <span
-                  className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-muted"
+                  className="label-eyebrow"
                   style={{ fontFamily: 'var(--font-mono)' }}
                 >
                   {meta.version}
                 </span>
               </div>
 
-              <p className="px-5 pt-3 text-xs leading-relaxed text-ink-muted">
+              <p className="px-5 pt-3 text-xs leading-relaxed text-ink-soft">
                 {meta.descripcion}
               </p>
 
@@ -93,7 +93,7 @@ export default function MarcosPage() {
                       />
                       <div className="min-w-0">
                         <div className="text-xs text-ink-soft">{d.dominio}</div>
-                        <div className="truncate text-[11px] text-ink-muted">{detalle}</div>
+                        <div className="truncate text-xs text-ink-muted">{detalle}</div>
                       </div>
                     </li>
                   );
@@ -102,7 +102,7 @@ export default function MarcosPage() {
 
               <div className="flex items-center justify-between border-t border-rule px-5 py-3">
                 <span
-                  className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-muted"
+                  className="label-eyebrow"
                   style={{ fontFamily: 'var(--font-mono)' }}
                 >
                   Explorar criterios
@@ -115,7 +115,7 @@ export default function MarcosPage() {
           ))}
         </div>
 
-        <p className="mt-8 max-w-3xl text-xs leading-relaxed text-ink-muted">
+        <p className="mt-8 max-w-3xl text-xs leading-relaxed text-ink-soft">
           El catálogo es un subconjunto representativo para auditorías de control interno de TI en el sector financiero. Cada criterio funciona como referencia documental para explicar por qué un hallazgo se mantiene.
         </p>
       </main>
@@ -132,10 +132,7 @@ function Stat({ value, label }: { value: number; label: string }) {
       >
         {value}
       </div>
-      <div
-        className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted"
-        style={{ fontFamily: 'var(--font-mono)' }}
-      >
+      <div className="mt-0.5 data-label" style={{ fontFamily: 'var(--font-mono)' }}>
         {label}
       </div>
     </div>

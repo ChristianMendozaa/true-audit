@@ -49,7 +49,7 @@ export default function CaseSidebar({ caseId, caseName, caseNumber }: CaseSideba
         <div className="flex items-center gap-3 md:mb-4">
           <div className="min-w-0">
             <div
-              className="text-[9px] uppercase tracking-[0.18em] text-ink-muted"
+              className="label-eyebrow"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
               Índice de expediente
@@ -90,7 +90,7 @@ export default function CaseSidebar({ caseId, caseName, caseNumber }: CaseSideba
           <>
             <div className="my-2 hidden border-t border-rule/60 md:block" />
             <div
-              className="hidden px-3 py-1.5 text-[8px] uppercase tracking-[0.16em] text-ink-muted md:block"
+              className="hidden px-3 py-1.5 label-eyebrow md:block"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
               Administración
@@ -118,7 +118,7 @@ export default function CaseSidebar({ caseId, caseName, caseNumber }: CaseSideba
           type="button"
           onClick={resetDemo}
           disabled={!isHydrated}
-          className="min-h-9 flex-1 border border-signal/35 bg-signal/10 px-3 py-2 text-left text-[10px] uppercase tracking-[0.12em] text-signal transition-colors hover:border-signal disabled:opacity-50 md:mb-3 md:w-full"
+          className="min-h-9 flex-1 border border-signal/35 bg-signal/10 px-3 py-2 text-left label-eyebrow text-signal transition-colors hover:border-signal disabled:opacity-50 md:mb-3 md:w-full"
           style={{ fontFamily: 'var(--font-mono)' }}
         >
           Restaurar demo original
@@ -157,13 +157,13 @@ function SidebarLink({
       className={`
         flex shrink-0 items-center gap-2.5 border px-3 py-2.5 text-sm transition-all md:mb-0.5
         ${isActive
-          ? 'audit-file-tab border-rule bg-paper-warm text-ink'
-          : 'border-transparent text-ink-muted hover:border-rule hover:bg-paper-warm/70 hover:text-ink-soft'
+          ? 'audit-file-tab border-rule-strong bg-paper-warm text-ink'
+          : 'border-transparent text-ink-soft hover:border-rule hover:bg-paper-warm/70 hover:text-ink'
         }
       `}
     >
       <span
-        className={`font-mono text-[9px] ${isActive ? 'text-signal' : 'text-ink-muted'}`}
+        className={`font-mono text-[11px] tracking-[0.06em] tabular-nums ${isActive ? 'text-signal' : 'text-ink-muted'}`}
         style={{ fontFamily: 'var(--font-mono)' }}
       >
         {code}

@@ -26,7 +26,7 @@ export default function KpiTile({
 
   return (
     <div
-      className={`border ${colors.border} bg-[#101721] p-4 opacity-0 animate-fade-up ${className}`}
+      className={`border ${colors.border} bg-surface p-4 opacity-0 animate-fade-up ${className}`}
       style={{
         animationDelay: `${animationDelay}ms`,
         animationFillMode: 'forwards',
@@ -41,7 +41,7 @@ export default function KpiTile({
       <div className="text-sm leading-snug text-ink">{label}</div>
       {sublabel && (
         <div
-          className="mt-2 border-t border-rule pt-2 text-[10px] uppercase tracking-[0.05em] text-ink-muted"
+          className="mt-2 border-t border-rule pt-2 data-label"
           style={{ fontFamily: 'var(--font-mono)' }}
         >
           {sublabel}

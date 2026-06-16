@@ -36,7 +36,7 @@ export default function EvidenceCard({ evidencia, onClick, selected = false, cla
         w-full border p-4 text-left transition-all
         ${selected
           ? 'border-signal bg-paper-warm text-ink shadow-[0_0_24px_rgba(216,164,55,0.12)]'
-          : `border-rule bg-[#101721] hover:border-ink-muted hover:bg-paper-warm ${className}`
+          : `border-rule-strong bg-surface hover:border-ink-muted hover:bg-paper-warm ${className}`
         }
       `}
       style={{ borderLeftColor: config.color, borderLeftWidth: '3px' }}
@@ -51,14 +51,14 @@ export default function EvidenceCard({ evidencia, onClick, selected = false, cla
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <span
-              className="font-mono text-[10px] uppercase tracking-wider text-ink-muted"
+              className="label-eyebrow"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
               {evidencia.id}
             </span>
             {evidencia.formato && (
               <span
-                className="shrink-0 border px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider"
+                className="shrink-0 border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider"
                 style={{
                   fontFamily: 'var(--font-mono)',
                   color: config.color,
@@ -71,7 +71,7 @@ export default function EvidenceCard({ evidencia, onClick, selected = false, cla
             )}
             {evidencia.archivoAdjunto && (
               <span
-                className="shrink-0 border px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider"
+                className="shrink-0 border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider"
                 style={{
                   fontFamily: 'var(--font-mono)',
                   color: '#74C7A6',
@@ -90,7 +90,7 @@ export default function EvidenceCard({ evidencia, onClick, selected = false, cla
             {evidencia.descripcion}
           </div>
           <div
-            className="mt-3 border-t border-rule pt-2 font-mono text-[10px] text-ink-muted"
+            className="mt-3 border-t border-rule pt-2 font-mono text-xs text-ink-muted"
             style={{ fontFamily: 'var(--font-mono)' }}
           >
             {evidencia.fecha} / {evidencia.fuente}

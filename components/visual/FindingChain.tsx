@@ -30,7 +30,7 @@ export default function FindingChain({ hallazgo, caso }: FindingChainProps) {
       {/* Traceability bar */}
       <div className="flex items-center gap-4 p-4 border border-rule bg-paper-warm rounded">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-[10px] text-ink-muted uppercase tracking-widest" style={{ fontFamily: 'var(--font-mono)' }}>
+          <span className="label-eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>
             Trazabilidad
           </span>
         </div>
@@ -54,7 +54,7 @@ export default function FindingChain({ hallazgo, caso }: FindingChainProps) {
       <div className="grid grid-cols-2 gap-4">
         <div className="border border-rule p-4">
           <div
-            className="text-[10px] text-ink-muted uppercase tracking-widest mb-3"
+            className="label-eyebrow mb-3"
             style={{ fontFamily: 'var(--font-mono)' }}
           >
             Criterios normativos aplicables
@@ -74,7 +74,7 @@ export default function FindingChain({ hallazgo, caso }: FindingChainProps) {
 
         <div className="border border-rule p-4">
           <div
-            className="text-[10px] text-ink-muted uppercase tracking-widest mb-3"
+            className="label-eyebrow mb-3"
             style={{ fontFamily: 'var(--font-mono)' }}
           >
             Evidencias que sustentan el hallazgo
@@ -83,16 +83,13 @@ export default function FindingChain({ hallazgo, caso }: FindingChainProps) {
             {evidencias.map(ev => (
               <div key={ev.id} className="flex items-center gap-2 text-xs">
                 <span
-                  className="font-mono shrink-0"
-                  style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: '#6B6358' }}
+                  className="label-eyebrow shrink-0 text-signal"
+                  style={{ fontFamily: 'var(--font-mono)' }}
                 >
                   {ev.id}
                 </span>
                 <span className="text-ink-soft">{ev.titulo}</span>
-                <span
-                  className="ml-auto font-mono shrink-0"
-                  style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: '#9B9388' }}
-                >
+                <span className="ml-auto label-eyebrow shrink-0" style={{ fontFamily: 'var(--font-mono)' }}>
                   {ev.tipo}
                 </span>
               </div>
@@ -119,7 +116,7 @@ export default function FindingChain({ hallazgo, caso }: FindingChainProps) {
               {/* Column header */}
               <div className="flex items-center gap-2 mb-3">
                 <div
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-white font-mono text-[10px] font-bold shrink-0"
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-white font-mono text-[11px] font-bold shrink-0"
                   style={{ background: col.accent, fontFamily: 'var(--font-mono)' }}
                 >
                   {col.icon}
@@ -127,8 +124,8 @@ export default function FindingChain({ hallazgo, caso }: FindingChainProps) {
                 <div>
                   <div className="text-xs font-semibold text-ink">{col.label}</div>
                   <div
-                    className="text-ink-muted"
-                    style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.04em' }}
+                    className="label-eyebrow"
+                    style={{ fontFamily: 'var(--font-mono)' }}
                   >
                     {col.desc}
                   </div>
@@ -170,18 +167,19 @@ export default function FindingChain({ hallazgo, caso }: FindingChainProps) {
 }
 
 function TraceChip({ label, color }: { label: string; color: 'blue' | 'amber' | 'red' | 'green' | 'gray' }) {
+  // Paleta oscura — todos ≥ 4.5:1 sobre --color-paper
   const colors = {
-    blue:  'bg-blue-50 text-blue-700 border-blue-200',
-    amber: 'bg-amber-50 text-amber-700 border-amber-200',
-    red:   'bg-red-50 text-red-700 border-red-200',
-    green: 'bg-green-50 text-green-700 border-green-200',
+    blue:  'bg-marco-cobit/10 text-marco-cobit border-marco-cobit/40',
+    amber: 'bg-amber-signal/10 text-amber-signal border-amber-signal/40',
+    red:   'bg-vermilion/10 text-vermilion border-vermilion/40',
+    green: 'bg-olive/10 text-olive border-olive/40',
     gray:  'bg-rule-light text-ink-muted border-rule',
   };
 
   return (
     <span
-      className={`text-xs px-2 py-0.5 rounded border font-mono ${colors[color]}`}
-      style={{ fontFamily: 'var(--font-mono)', fontSize: '10px' }}
+      className={`label-eyebrow px-2 py-0.5 border font-mono ${colors[color]}`}
+      style={{ fontFamily: 'var(--font-mono)' }}
     >
       {label}
     </span>

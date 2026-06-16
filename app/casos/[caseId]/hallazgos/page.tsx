@@ -198,12 +198,12 @@ export default function HallazgosPage() {
       <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1
-            className="font-display text-2xl font-bold text-ink"
+            className="font-display text-3xl font-bold text-ink"
             style={{ fontFamily: 'var(--font-display)', letterSpacing: '0em' }}
           >
             Hallazgos de auditoría
           </h1>
-          <p className="mt-1 text-sm text-ink-muted">
+          <p className="mt-1 text-sm text-ink-soft">
             {hallazgosActivos.length} activos · {hallazgosActivos.filter(h => h.estadoRespuesta === 'pendiente').length} sin respuesta
           </p>
         </div>
@@ -266,13 +266,13 @@ export default function HallazgosPage() {
         {/* Left: table/list */}
         <div className="min-h-0 overflow-auto border border-rule">
           <table className="w-full border-collapse text-left text-sm">
-            <thead className="sticky top-0 bg-[#0B0F15] text-[10px] uppercase tracking-[0.12em] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
-              <tr>
+            <thead className="sticky top-0 bg-[#0B0F15]" style={{ fontFamily: 'var(--font-mono)' }}>
+              <tr className="label-eyebrow text-ink-muted">
                 <th className="border-b border-rule px-3 py-2.5 font-medium">Código</th>
                 <th className="border-b border-rule px-3 py-2.5 font-medium">Hallazgo</th>
                 <th className="border-b border-rule px-3 py-2.5 font-medium">Riesgo</th>
                 <th className="border-b border-rule px-3 py-2.5 font-medium">Respuesta</th>
-                <th className="border-b border-rule px-3 py-2.5 font-medium text-center">Sust.</th>
+                <th className="border-b border-rule px-3 py-2.5 font-medium text-center">Sustentación</th>
               </tr>
             </thead>
             <tbody>
@@ -287,10 +287,12 @@ export default function HallazgosPage() {
                     }`}
                     onClick={() => { setSelectedId(h.id); setDraft(null); }}
                   >
-                    <td className="whitespace-nowrap px-3 py-2.5 font-mono text-[10px] text-signal" style={{ fontFamily: 'var(--font-mono)' }}>
+                    <td className="whitespace-nowrap px-3 py-2.5 font-mono text-xs text-signal" style={{ fontFamily: 'var(--font-mono)' }}>
                       {h.numero}
                     </td>
-                    <td className="max-w-64 truncate px-3 py-2.5 text-ink">{h.titulo}</td>
+                    <td className="max-w-64 px-3 py-2.5 text-ink">
+                      <span className="line-clamp-2 leading-snug">{h.titulo}</span>
+                    </td>
                     <td className="px-3 py-2.5"><StatusPill status={h.severidad} size="sm" /></td>
                     <td className="px-3 py-2.5"><StatusPill status={h.estadoRespuesta} size="sm" /></td>
                     <td className="px-3 py-2.5 text-center">
@@ -381,8 +383,8 @@ function FindingDetail({
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <div className="mb-1 flex items-center gap-2">
-            <span className="font-mono text-[10px] text-signal" style={{ fontFamily: 'var(--font-mono)' }}>{hallazgo.numero}</span>
-            <span className="font-mono text-[10px] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>{hallazgo.fechaEmision}</span>
+            <span className="font-mono text-xs text-signal" style={{ fontFamily: 'var(--font-mono)' }}>{hallazgo.numero}</span>
+            <span className="font-mono text-xs text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>{hallazgo.fechaEmision}</span>
           </div>
           <h2
             className="font-display text-lg font-bold text-ink"
@@ -400,7 +402,7 @@ function FindingDetail({
       <div className="space-y-4">
         <div className="border border-rule bg-[#0B0F15]/70 p-3">
           <div className="mb-2 flex items-center justify-between gap-3">
-            <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
+            <div className="label-eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>
               Sustentacion del hallazgo
             </div>
             <SupportBadge score={support.score} status={support.status} />
@@ -426,14 +428,14 @@ function FindingDetail({
           { label: 'Recomendación', text: hallazgo.recomendacion },
         ].map(({ label, text }) => text && (
           <div key={label} className="border-t border-rule pt-3">
-            <div className="mb-1 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>{label}</div>
+            <div className="mb-1 label-field" style={{ fontFamily: 'var(--font-mono)' }}>{label}</div>
             <p className="text-sm leading-relaxed text-ink-soft">{text}</p>
           </div>
         ))}
 
         {criterios.length > 0 && (
           <div className="border-t border-rule pt-3">
-            <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>Criterios normativos</div>
+            <div className="mb-2 label-eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>Criterios normativos</div>
             <div className="flex flex-wrap gap-1.5">
               {criterios.map(c => <CriterioBadge key={c.id} codigo={c.codigo} marco={c.marco} size="sm" />)}
             </div>
@@ -442,11 +444,11 @@ function FindingDetail({
 
         {evidenciasVinculadas.length > 0 && (
           <div className="border-t border-rule pt-3">
-            <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>Evidencias vinculadas ({evidenciasVinculadas.length})</div>
+            <div className="mb-2 label-eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>Evidencias vinculadas ({evidenciasVinculadas.length})</div>
             <div className="space-y-1">
               {evidenciasVinculadas.map(e => e && (
                 <div key={e.id} className="flex items-center gap-2 text-xs text-ink-muted">
-                  <span className="font-mono text-[10px] text-signal" style={{ fontFamily: 'var(--font-mono)' }}>{e.id}</span>
+                  <span className="font-mono text-xs text-signal" style={{ fontFamily: 'var(--font-mono)' }}>{e.id}</span>
                   <span className="truncate">{e.titulo}</span>
                 </div>
               ))}
@@ -456,12 +458,12 @@ function FindingDetail({
 
         {respuestas.length > 0 && (
           <div className="border-t border-rule pt-3">
-            <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>Respuesta del auditado</div>
+            <div className="mb-2 label-eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>Respuesta del auditado</div>
             {respuestas.map((r, i) => (
               <div key={i} className="border border-rule bg-[#0B0F15]/70 p-3 text-sm">
                 <div className="mb-1 flex items-center gap-2">
-                  <span className="font-mono text-[9px] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>{r.fecha}</span>
-                  <span className="border border-rule px-1.5 py-0.5 text-[9px] uppercase text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>{r.postura}</span>
+                  <span className="font-mono text-xs text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>{r.fecha}</span>
+                  <span className="border border-rule px-1.5 py-0.5 label-eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>{r.postura}</span>
                 </div>
                 <p className="text-xs leading-relaxed text-ink-soft">{r.argumento}</p>
               </div>
@@ -576,7 +578,7 @@ function FindingForm({
 
   return (
     <div className="audit-file-surface p-5">
-      <div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-vermilion" style={{ fontFamily: 'var(--font-mono)' }}>
+      <div className="mb-1 label-eyebrow text-vermilion" style={{ fontFamily: 'var(--font-mono)' }}>
         {draft.id ? `Editar ${draft.numero}` : 'Nuevo hallazgo'}
       </div>
       <div className="mb-4 flex items-start justify-between gap-3">
@@ -611,7 +613,7 @@ function FindingForm({
         </Field>
 
         <div className="border border-rule bg-[#0B0F15]/70 p-3">
-          <div className="mb-2 text-[10px] uppercase tracking-widest text-signal" style={{ fontFamily: 'var(--font-mono)' }}>
+          <div className="mb-2 label-eyebrow text-signal" style={{ fontFamily: 'var(--font-mono)' }}>
             Constructor asistido de hallazgos
           </div>
           <Field label="Describe lo observado">
@@ -645,14 +647,14 @@ function FindingForm({
                 return (
                   <div key={key} className={`border p-3 ${accepted ? 'border-olive/45 bg-olive/5' : discarded ? 'border-rule opacity-55' : 'border-rule bg-[#101721]'}`}>
                     <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-                      <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
+                      <div className="label-eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>
                         {suggestionItem.label} / {suggestionItem.confidence}%
                       </div>
                       <div className="flex gap-2">
-                        <button type="button" onClick={() => acceptSuggestion(suggestionItem)} className="border border-olive/45 px-2 py-1 text-[10px] text-olive hover:border-olive">
+                        <button type="button" onClick={() => acceptSuggestion(suggestionItem)} className="border border-olive/45 px-2 py-1 text-xs text-olive hover:border-olive">
                           Aceptar
                         </button>
-                        <button type="button" onClick={() => discardSuggestion(suggestionItem)} className="border border-rule px-2 py-1 text-[10px] text-ink-muted hover:text-ink">
+                        <button type="button" onClick={() => discardSuggestion(suggestionItem)} className="border border-rule px-2 py-1 text-xs text-ink-muted hover:text-ink">
                           Descartar
                         </button>
                       </div>
@@ -692,7 +694,7 @@ function FindingForm({
             <input type="number" min="1" max="5" value={draft.impacto} onChange={e => update('impacto', Number(e.target.value))} className="field-input" />
           </Field>
           <div className="border border-rule bg-[#0B0F15]/70 p-3">
-            <div className="mb-1 text-[10px] uppercase tracking-widest text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
+            <div className="mb-1 label-field" style={{ fontFamily: 'var(--font-mono)' }}>
               Riesgo
             </div>
             <div className="font-mono text-xs text-ink" style={{ fontFamily: 'var(--font-mono)' }}>
@@ -720,12 +722,12 @@ function FindingForm({
 
         {draftMissing.length > 0 && (
           <div className="border border-amber-signal/35 bg-amber-signal/5 p-3">
-            <div className="mb-2 text-[10px] uppercase tracking-widest text-amber-signal" style={{ fontFamily: 'var(--font-mono)' }}>
+            <div className="mb-2 label-eyebrow text-amber-signal" style={{ fontFamily: 'var(--font-mono)' }}>
               Pendiente para sustentacion
             </div>
             <div className="flex flex-wrap gap-2">
               {draftMissing.map(([label]) => (
-                <span key={label} className="border border-rule px-2 py-1 text-[10px] text-ink-muted">
+                <span key={label} className="border border-rule px-2 py-1 text-xs text-ink-muted">
                   {label}
                 </span>
               ))}
@@ -774,7 +776,7 @@ function FindingForm({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <div className="mb-1 text-[10px] uppercase tracking-widest text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
+      <div className="mb-1 label-field" style={{ fontFamily: 'var(--font-mono)' }}>
         {label}
       </div>
       {children}
@@ -785,7 +787,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function SupportBadge({ score, status }: { score: number; status: FindingSupportStatus }) {
   return (
     <span
-      className={`inline-flex whitespace-nowrap border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] ${supportClasses[status]}`}
+      className={`inline-flex whitespace-nowrap border px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.06em] ${supportClasses[status]}`}
       style={{ fontFamily: 'var(--font-mono)' }}
       title={`Sustentacion ${score}% - ${supportStatusLabel(status)}`}
     >
@@ -799,7 +801,7 @@ function SuggestionValue({ value }: { value: string | number | string[] }) {
     return (
       <div className="flex flex-wrap gap-1.5">
         {value.map(item => (
-          <span key={item} className="border border-rule px-2 py-0.5 font-mono text-[10px] text-signal" style={{ fontFamily: 'var(--font-mono)' }}>
+          <span key={item} className="border border-rule px-2 py-0.5 font-mono text-xs text-signal" style={{ fontFamily: 'var(--font-mono)' }}>
             {item}
           </span>
         ))}
@@ -812,7 +814,7 @@ function SuggestionValue({ value }: { value: string | number | string[] }) {
 function Checklist({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="border border-rule bg-[#0B0F15]/70 p-3">
-      <div className="mb-2 text-[10px] uppercase tracking-widest text-ink-muted" style={{ fontFamily: 'var(--font-mono)' }}>
+      <div className="mb-2 label-eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>
         {title}
       </div>
       <div className="max-h-44 space-y-1 overflow-auto pr-1">

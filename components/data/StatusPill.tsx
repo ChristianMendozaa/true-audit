@@ -13,7 +13,7 @@ const config: Record<StatusType, { label: string; classes: string; dot: string }
   medio: { label: 'Riesgo medio', classes: 'border-amber-signal/55 bg-amber-signal/15 text-amber-signal', dot: 'bg-amber-signal' },
   bajo: { label: 'Riesgo bajo', classes: 'border-olive/55 bg-olive/15 text-olive', dot: 'bg-olive' },
   pendiente: { label: 'Sin respuesta', classes: 'border-vermilion/45 bg-vermilion/10 text-vermilion', dot: 'bg-vermilion' },
-  recibida: { label: 'Respuesta recibida', classes: 'border-node-doc/45 bg-node-doc/10 text-node-doc', dot: 'bg-node-doc' },
+  recibida: { label: 'Respuesta recibida', classes: 'border-marco-cobit/45 bg-marco-cobit/10 text-marco-cobit', dot: 'bg-marco-cobit' },
   aceptada: { label: 'Aceptada', classes: 'border-olive/55 bg-olive/15 text-olive', dot: 'bg-olive' },
   parcial: { label: 'Respuesta parcial', classes: 'border-amber-signal/55 bg-amber-signal/15 text-amber-signal', dot: 'bg-amber-signal' },
   rechazada: { label: 'No acepta', classes: 'border-vermilion/55 bg-vermilion/15 text-vermilion', dot: 'bg-vermilion' },
@@ -27,8 +27,8 @@ const config: Record<StatusType, { label: string; classes: string; dot: string }
 export default function StatusPill({ status, size = 'md', className = '' }: StatusPillProps) {
   const c = config[status] ?? config.pendiente;
   const sizeClasses = size === 'sm'
-    ? 'text-[9px] px-2 py-0.5 gap-1'
-    : 'text-[10px] px-2.5 py-1 gap-1.5';
+    ? 'text-[10px] px-2 py-0.5 gap-1'
+    : 'text-[11px] px-2.5 py-1 gap-1.5';
 
   return (
     <span

@@ -25,7 +25,7 @@ export default function CasosPage() {
             >
               Expedientes de auditoria
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-muted">
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-soft">
               Casos de auditoria de sistemas organizados como expedientes: evidencias, hallazgos, criterios y respuestas conectadas.
             </p>
           </div>
@@ -56,7 +56,7 @@ export default function CasosPage() {
                 <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-start sm:gap-6 sm:p-6 lg:gap-8">
                   <div className="w-full shrink-0 sm:w-40">
                     <div
-                      className="mb-1 font-mono text-[10px] uppercase tracking-widest text-ink-muted"
+                      className="mb-1 label-eyebrow"
                       style={{ fontFamily: 'var(--font-mono)' }}
                     >
                       Expediente
@@ -97,8 +97,10 @@ export default function CasosPage() {
                     <KpiMini value={criticos} label="Riesgo alto" accent={criticos > 0} />
                     <KpiMini value={diasTranscurridos} label="Dias" />
                     <KpiMini value={sinRespuesta} label="Sin resp." accent={sinRespuesta > 0} />
-                    <div className="flex items-center text-ink-muted transition-transform group-hover:translate-x-1 group-hover:text-signal sm:justify-end">
-                      -&gt;
+                    <div className="flex items-center text-ink-muted transition-transform group-hover:translate-x-1 group-hover:text-signal sm:justify-end" aria-hidden="true">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
                     </div>
                   </div>
                 </div>
@@ -106,7 +108,7 @@ export default function CasosPage() {
                 <div className="border-t border-rule bg-[#0B0F15]/45">
                   <div className="flex flex-wrap items-center gap-3 px-5 py-3 sm:px-6">
                     <span
-                      className="shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-muted"
+                      className="shrink-0 label-eyebrow"
                       style={{ fontFamily: 'var(--font-mono)' }}
                     >
                       Respuestas recibidas
@@ -118,7 +120,7 @@ export default function CasosPage() {
                       />
                     </div>
                     <span
-                      className="shrink-0 font-mono text-[10px] text-ink-muted"
+                      className="shrink-0 font-mono text-xs text-ink-muted"
                       style={{ fontFamily: 'var(--font-mono)' }}
                     >
                       {respondidos}/{caso.hallazgos.length}
@@ -143,10 +145,7 @@ function KpiMini({ value, label, accent = false }: { value: number; label: strin
       >
         {value}
       </div>
-      <div
-        className="mt-1 text-ink-muted"
-        style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.04em', textTransform: 'uppercase' }}
-      >
+      <div className="mt-1 data-label" style={{ fontFamily: 'var(--font-mono)' }}>
         {label}
       </div>
     </div>
